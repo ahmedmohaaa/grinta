@@ -9,7 +9,7 @@ import './News.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const API_BASE_URL = 'http://161.97.76.160/api';
+const API_BASE_URL = 'https://api.algrinta.com/api';
 
 const News = () => {
   const containerRef = useRef(null);
