@@ -450,13 +450,142 @@ main {
 /* =========================================
    Responsive
    ========================================= */
+/* =========================================
+   Responsive (التجاوب الكامل للموبايل والشاشات الصغيرة)
+   ========================================= */
 @media (max-width: 768px) {
+  /* 1. إصلاح المسافات العامة */
+  .section-container {
+    padding: 3rem 1rem; /* تقليل الهوامش الجانبية والعلوية */
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  /* 2. إصلاح البانر الرئيسي (Hero Section) */
+  .hero-section {
+    height: auto;
+    min-height: auto;
+    padding: 7rem 0 3rem; /* ترك مساحة للنافبار في الأعلى */
+  }
+
+  .hero-content {
+    padding: 0 1rem;
+  }
+
   .hero-match-card {
     flex-direction: column;
-    padding: 2rem 1rem;
-    gap: 1.5rem;
+    padding: 2rem 1.5rem;
+    gap: 1rem;
+    /* إيقاف التأثير ثلاثي الأبعاد على الموبايل لمنع خروج الكارت عن الشاشة */
+    transform: none; 
+    border-radius: 20px;
   }
-  .hero-vs { font-size: 2rem; }
+
+  .hero-match-card:hover {
+    transform: translateY(-5px); /* تأثير حركة بسيط للموبايل */
+  }
+
+  .hero-team-logo {
+    width: 70px; /* تصغير اللوجو */
+    height: 70px;
+  }
+
+  .hero-team-name {
+    font-size: 1.4rem;
+    text-align: center;
+  }
+
+  .hero-score-area {
+    padding: 1rem 0;
+  }
+
+  .hero-vs { 
+    font-size: 2rem; 
+  }
+
+  .hero-btn {
+    margin-top: 1.5rem;
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    width: 100%; /* جعل الزر بعرض الكارت على الموبايل */
+    text-align: center;
+  }
+
+  /* 3. إصلاح شبكة المباريات (Matches Grid) */
+  .matches-grid { 
+    grid-template-columns: 1fr; /* إجبار المباريات لتكون عمود واحد */
+  }
+
+  /* تعديل تخطيط الفرق لمنع ضغط النصوص (الأسماء) */
+  .match-teams {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .team-row {
+    width: 100%; /* إلغاء الـ 40% السابقة */
+    gap: 0.5rem;
+  }
+
+  .team-row img {
+    width: 30px; /* تصغير لوجو كارت المباراة */
+    height: 30px;
+  }
+
+  .team-row span {
+    font-size: 0.9rem; /* تصغير الخط لمنع التمدد الخاطئ */
+  }
+
+  .match-score-box {
+    font-size: 1.2rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  /* 4. إصلاح شبكة الأخبار (News & Videos Grid) */
+  .bento-grid {
+    grid-template-columns: 1fr; /* لحل مشكلة الـ minmax(300px) على الشاشات الأصغر من 300px */
+  }
+
+  .news-card {
+    height: 250px; /* تقليل ارتفاع كارت الخبر على الموبايل */
+  }
+
+  .news-title {
+    font-size: 1.1rem;
+  }
+
+  /* 5. احتواء إعلانات أدسنس (AdSense) */
+  .adsense-container {
+    box-sizing: border-box; /* لمنع الإعلان من دفع الشاشة عرضياً */
+    width: 100%;
+    margin: 1.5rem auto;
+  }
+}
+
+/* دعم إضافي للشاشات الصغيرة جداً (أقل من 400px مثل iPhone SE) */
+@media (max-width: 400px) {
+  .team-row {
+    flex-direction: column; /* جعل الشعار فوق اسم الفريق إذا ضاقت الشاشة جداً */
+    text-align: center;
+  }
+  .team-row.away {
+    flex-direction: column;
+  }
+  .match-teams {
+    align-items: start;
+  }
+}t-size: 2rem; }
   .section-title { font-size: 1.5rem; }
   .matches-grid { grid-template-columns: 1fr; }
 }
