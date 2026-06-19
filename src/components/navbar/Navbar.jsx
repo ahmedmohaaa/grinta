@@ -81,7 +81,10 @@ const Navbar = () => {
             title="المباريات"
           />
 
-
+          <CustomLink
+            to="/stats"
+            title="االاحصائيات"
+          />
 
           <CustomLink
             to="/news"
