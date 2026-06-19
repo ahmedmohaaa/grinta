@@ -42,7 +42,7 @@ const Home = () => {
           fetch(`${API_BASE_URL}/fixtures/`).then(res => res.json()).catch(() => []),
           fetch(`${API_BASE_URL}/leagues/`).then(res => res.json()).catch(() => []),
           fetch(`${API_BASE_URL}/articles/`).then(res => res.json()).catch(() => []),
-          fetch(`${API_BASE_URL}/videos/`).then(res => res.json()).catch(() => []),
+          fetch(`${API_BASE_URL}/proxy/highlights/`).then(res => res.json()).catch(() => []),
           fetch(`${API_BASE_URL}/ads/?page=home`).then(res => res.json()).catch(() => []),
           fetch(`${API_BASE_URL}/proxy/matches/highlights/`).then(res => res.json()).catch(() => null)
         ]);
