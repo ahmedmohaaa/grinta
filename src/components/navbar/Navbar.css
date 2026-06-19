@@ -322,7 +322,7 @@ body {
   color: var(--text-light);
   background: rgba(16, 185, 129, 0.1);
   border-color: rgba(16, 185, 129, 0.2);
-  transform: translateX(-5px); /* حركة خفيفة لليمين */
+  transform: none; /* حركة خفيفة لليمين */
 }
 /* ==========================================
    تنسيق الروابط (Navbar Links Style)
