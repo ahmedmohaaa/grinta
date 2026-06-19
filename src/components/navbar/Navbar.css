@@ -370,16 +370,25 @@ body {
    تنسيق روابط قائمة الموبايل (Mobile Menu Links)
    ========================================== */
 .mobile-menu a {
-  color: var(--text-light, #ffffff) !important; /* ظهورها باللون الأبيض في الموبايل */
+  color: var(--text-light, #ffffff) !important;
   text-decoration: none;
+
   font-size: 1.1rem;
   font-weight: 500;
+
   padding: 0.8rem 1rem;
   border-radius: 8px;
+
   display: flex;
   align-items: center;
   gap: 0.75rem;
+
   transition: background 0.2s ease, color 0.2s ease;
+
+  width: 100%;
+  box-sizing: border-box;
+
+  min-width: 0; /* 🔥 أهم سطر لحل القص */
 }
 
 /* تأثير التمرير والنشاط في الموبايل */
