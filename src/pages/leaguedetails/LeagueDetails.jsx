@@ -4,7 +4,7 @@ import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import './LeagueDetails.css';
 
-const API_BASE_URL = 'http://161.97.76.160/api';
+const API_BASE_URL = 'https://161.97.76.160/api';
 
 const LeagueDetails = () => {
   const { id, season } = useParams(); // يتم تمريرهم عبر الـ Router مثل /league/39/2026
