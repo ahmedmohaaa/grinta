@@ -4,7 +4,7 @@ import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import './StandingsPage.css';
 
-const API_BASE_URL = 'http://161.97.76.160/api';
+const API_BASE_URL = 'https://api.algrinta.com/api';
 
 const StandingsPage = () => {
   const [leagues, setLeagues] = useState([]);
