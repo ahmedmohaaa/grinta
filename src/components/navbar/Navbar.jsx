@@ -187,7 +187,7 @@ const Navbar = () => {
 
           <MobileLink
             to="/videos"
-            title="نتائج مباشرة"
+            title="ملخصات المباريات"
           />
 
           <MobileLink
@@ -199,7 +199,16 @@ const Navbar = () => {
             to="/stats"
             title="الاحصائيات"
           />
-
+          
+          <MobileLink
+            to="/teams"
+            title="الفرق"
+          />
+        
+          <MobileLink
+            to="/players"
+            title="اللاعبين"
+          />
         </div>
       )}
 
