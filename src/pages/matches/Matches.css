@@ -37,6 +37,7 @@
 
 .search-input {
   width: 100%;
+  box-sizing: border-box; /* 🔥 هذا هو الحل الجذري لمنع الخروج عن الشاشة */
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 1rem 1rem 1rem 3rem;
@@ -68,6 +69,7 @@
 }
 
 .filter-select {
+  box-sizing: border-box; /* 🔥 منع التمدد الزائد */
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #e4e4e7;
@@ -77,6 +79,7 @@
   cursor: pointer;
   outline: none;
   min-width: 150px;
+  max-width: 100%; /* لضمان عدم تجاوز الشاشة */
   transition: border-color 0.3s;
 }
 
@@ -91,6 +94,7 @@
 
 .status-pills {
   display: flex;
+  flex-wrap: wrap; /* 🔥 يسمح للأزرار بالنزول لسطر جديد إذا ضاقت الشاشة */
   gap: 0.5rem;
   background: rgba(0, 0, 0, 0.2);
   padding: 0.4rem;
@@ -340,25 +344,60 @@
 }
 
 /* Responsive */
+/* Responsive - الكود المحدث */
 @media (max-width: 768px) {
+  /* تقليل المسافات الجانبية للصفحة على الموبايل لإعطاء مساحة أكبر للعناصر */
+  .matches-wrapper {
+    padding: 0 1rem; 
+  }
+
+  /* تحويل كارت المباراة لعمود واحد مع تقليل الحواف الداخلية */
   .match-card-adv {
     grid-template-columns: 1fr;
     text-align: center;
-    gap: 1rem;
+    gap: 1.2rem;
+    padding: 1.2rem; 
   }
+
   .team-side {
     flex-direction: column;
     justify-content: center;
     text-align: center;
+    gap: 0.5rem;
   }
+
   .team-side.home, .team-side.away {
     justify-content: center;
   }
+
+  /* تصغير حجم النتيجة قليلاً على الموبايل حتى لا تنكسر الشاشة */
+  .score-display {
+    font-size: 2rem;
+    letter-spacing: 3px;
+  }
+
+  /* جعل الفلاتر تأخذ العرض بالكامل بشكل مرتب */
   .filters-row {
     flex-direction: column;
     align-items: stretch;
   }
+
+  .filter-select {
+    width: 100%; /* إجبار السيلكت على أخذ العرض المتاح فقط */
+  }
+
+  /* جعل أزرار الحالة تتمدد بشكل متساوٍ على الموبايل */
   .status-pills {
     justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .status-pill {
+    flex: 1; /* لجعل الأزرار بنفس الحجم */
+    text-align: center;
+    padding: 0.5rem 0.5rem;
+    font-size: 0.8rem;
+    white-space: nowrap; /* لمنع انكسار النص داخل الزر */
   }
 }
