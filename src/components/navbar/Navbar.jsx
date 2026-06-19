@@ -81,10 +81,7 @@ const Navbar = () => {
             title="المباريات"
           />
 
-          <CustomLink
-            to="/live"
-            title="مباشر"
-          />
+
 
           <CustomLink
             to="/news"
@@ -180,9 +177,13 @@ const Navbar = () => {
             to="/matches"
             title="المباريات"
           />
+                    <MobileLink
+            to="/leagues"
+            title="الدوريات"
+          />
 
           <MobileLink
-            to="/live"
+            to="/videos"
             title="نتائج مباشرة"
           />
 
