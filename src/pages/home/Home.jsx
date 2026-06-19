@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 gsap.registerPlugin(ScrollTrigger);
 
 // تحديد الرابط الأساسي للباك إند الخاص بك في دجانغو
-const API_BASE_URL = 'http://161.97.76.160/api';
+const API_BASE_URL = 'https://161.97.76.160/api';
 
 const Home = () => {
   const mainRef = useRef(null);
