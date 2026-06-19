@@ -186,3 +186,79 @@
   .main-score { font-size: 3rem; }
   .lineups-dual-grid { grid-template-columns: 1fr; gap: 2rem; }
 }
+
+/* ===================================================
+   Responsive - تحديثات التجاوب لتفاصيل المباراة
+   =================================================== */
+@media (max-width: 768px) {
+  /* 1. لوحة النتيجة (Scoreboard) */
+  .scoreboard-container {
+    gap: 0.5rem; /* تقليل الفراغات لتناسب الشاشة */
+    flex-wrap: nowrap;
+  }
+
+  .team-block {
+    width: 30%; /* جعل عرض الفريق مرناً */
+  }
+
+  .team-block img {
+    width: 60px; /* تصغير الشعارات */
+    height: 60px;
+  }
+
+  .team-block h2 {
+    font-size: 0.85rem; /* تصغير الخط */
+    word-break: break-word; /* كسر الكلمات الطويلة */
+  }
+
+  .main-score {
+    font-size: 2.5rem; /* تصغير حجم النتيجة */
+    gap: 0.5rem;
+  }
+
+  /* 2. تبويبات المباراة */
+  .match-tabs-bar {
+    border-radius: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .match-tabs-bar button {
+    padding: 0.8rem 0.5rem;
+    font-size: 0.9rem; /* تصغير الخط في التبويبات */
+  }
+
+  /* 3. الإحصائيات (Stats) */
+  .stat-comparison-row {
+    padding: 0.2rem 0;
+  }
+  
+  .stat-values-text {
+    font-size: 0.9rem; /* تصغير الأرقام للمقارنة */
+  }
+
+  /* 4. التشكيلات (Lineups) */
+  .lineups-dual-grid {
+    grid-template-columns: 1fr; /* ترتيب الفرق تحت بعضها */
+    gap: 1.5rem;
+  }
+
+  .squad-list li {
+    padding: 8px; /* تصغير المساحات داخل قائمة اللاعبين */
+    font-size: 0.9rem;
+  }
+  
+  .player-name-txt {
+    font-size: 0.85rem;
+  }
+}
+
+/* دعم إضافي للشاشات الصغيرة جداً */
+@media (max-width: 380px) {
+  .team-block img {
+    width: 50px;
+    height: 50px;
+  }
+  .main-score {
+    font-size: 2rem;
+  }
+}
