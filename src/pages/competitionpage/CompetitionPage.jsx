@@ -8,7 +8,7 @@ import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import './CompetitionPage.css';
 
-const API_BASE_URL = 'http://161.97.76.160/api';
+const API_BASE_URL = 'https://161.97.76.160/api';
 
 const CompetitionPage = () => {
   const { id } = useParams(); // معرف الدوري القادم من الرابط الموجه (مثال: 39 للدوري الإنجليزي)
