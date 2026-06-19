@@ -369,6 +369,9 @@ body {
 /* ==========================================
    تنسيق روابط قائمة الموبايل (Mobile Menu Links)
    ========================================== */
+mobile-menu{
+margin-right: 100px;
+}
 .mobile-menu a {
   color: var(--text-light, #ffffff) !important;
   text-decoration: none;
