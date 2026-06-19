@@ -206,7 +206,70 @@
   width: 100% !important;
   max-height: 70vh;
 }
+/* ===================================================
+   Responsive (التجاوب الكامل للموبايل والشاشات الصغيرة)
+   =================================================== */
+@media (max-width: 768px) {
+  /* 1. إصلاح الهيدر والعنوان الرئيسي */
+  .videos-hero-header {
+    padding: 2rem 1rem; /* تقليل الحواف الداخلية لترك مساحة للشاشة */
+    margin-bottom: 2rem;
+    border-radius: 1rem;
+  }
 
+  .videos-hero-header h1 {
+    font-size: 1.6rem; /* تصغير حجم الخط ليتناسب مع الموبايل */
+    flex-wrap: wrap; /* السماح للأيقونة والنص بالنزول لسطر جديد بمرونة */
+    gap: 8px; /* مسافة متناسقة بين الأيقونة والنص */
+    line-height: 1.4;
+  }
+
+  .videos-hero-header p {
+    font-size: 0.95rem;
+  }
+
+  /* 2. إصلاح شبكة الفيديوهات */
+  .videos-grid-container {
+    grid-template-columns: 1fr; /* إجبار الكروت لتكون عموداً واحداً لتجنب الانكماش */
+    gap: 1.5rem;
+  }
+
+  /* 3. إصلاح النافذة المنبثقة (Modal) والفيديو المدمج */
+  .video-modal-overlay {
+    padding: 1rem; /* تقليل الهوامش الجانبية للنافذة السوداء */
+  }
+
+  .modal-video-title {
+    font-size: 1.1rem;
+    padding: 1rem 3rem 1rem 1rem; /* ترك مساحة لزر الإغلاق على اليسار */
+    line-height: 1.4;
+  }
+
+  .close-modal-btn {
+    top: 10px;
+    left: 10px;
+    width: 32px;
+    height: 32px;
+  }
+
+  /* ضبط ارتفاع الفيديو داخل الـ iframe ليناسب شاشة الموبايل */
+  .embed-video-container iframe {
+    height: 250px !important; /* ارتفاع مثالي للهواتف */
+  }
+}
+
+/* دعم إضافي للشاشات الصغيرة جداً (مثل iPhone SE) */
+@media (max-width: 400px) {
+  .videos-hero-header h1 {
+    font-size: 1.4rem;
+  }
+  .video-match-title {
+    font-size: 1.05rem;
+  }
+  .embed-video-container iframe {
+    height: 220px !important;
+  }
+}
 /* Animations */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
