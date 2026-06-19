@@ -9,16 +9,12 @@ import { Link } from "react-router-dom";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// الاعتماد المباشر على سيرفر الدومين الخاص بك
 const API_BASE_URL = 'https://api.algrinta.com/api';
-
-// معرفات الدوريات الكبرى المستهدفة من API-Sports (الانجليزي، الاسباني، الإيطالي، الفرنسي، المصري، السعودي)
-const TARGET_LEAGUE_IDS = [39, 140, 135, 61, 233, 307];
 
 const Home = () => {
   const mainRef = useRef(null);
 
-  // --- حالات تخزين البيانات القادمة من الـ API الحقيقي ---
+  // --- حالات تخزين البيانات ---
   const [liveMatches, setLiveMatches] = useState([]);
   const [todayMatches, setTodayMatches] = useState([]);
   const [leagues, setLeagues] = useState([]);
@@ -27,7 +23,7 @@ const Home = () => {
   const [externalVideos, setExternalVideos] = useState([]);
   const [ads, setAds] = useState([]);
 
-  // --- التحكم في عرض 4 عناصر فقط في كل مرة عند ضغط "عرض المزيد" ---
+  // --- التحكم في عرض 4 عناصر ---
   const [visibleLive, setVisibleLive] = useState(4);
   const [visibleToday, setVisibleToday] = useState(4);
   const [visibleNews, setVisibleNews] = useState(4);
@@ -42,45 +38,38 @@ const Home = () => {
       try {
         setLoading(true);
         
-        // جلب البيانات المتوازية لسرعة تحميل فائقة للمنصة
         const [fixturesRes, leaguesRes, articlesRes, videosRes, adsRes, extVideosRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/fixtures/`).then(res => res.json()),
-          fetch(`${API_BASE_URL}/leagues/`).then(res => res.json()),
-          fetch(`${API_BASE_URL}/articles/`).then(res => res.json()),
-          fetch(`${API_BASE_URL}/videos/`).then(res => res.json()),
-          fetch(`${API_BASE_URL}/ads/?page=home`).then(res => res.json()),
-          // جلب الفيديوهات الخارجية من الـ Proxy المقابل لـ MatchHighlightsProxyView في urls.py الخاص بك
+          fetch(`${API_BASE_URL}/fixtures/`).then(res => res.json()).catch(() => []),
+          fetch(`${API_BASE_URL}/leagues/`).then(res => res.json()).catch(() => []),
+          fetch(`${API_BASE_URL}/articles/`).then(res => res.json()).catch(() => []),
+          fetch(`${API_BASE_URL}/videos/`).then(res => res.json()).catch(() => []),
+          fetch(`${API_BASE_URL}/ads/?page=home`).then(res => res.json()).catch(() => []),
           fetch(`${API_BASE_URL}/proxy/matches/highlights/`).then(res => res.json()).catch(() => null)
         ]);
 
-        // 1. فلترة وتوزيع المباريات (مباشر ومجدول) بناءً على الحقول الحقيقية في داتا المزامنة لديك
-        const live = fixturesRes.filter(f => ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(f.status_short));
-        const upcoming = fixturesRes.filter(f => f.status_short === 'NS' || f.status_short === 'TBD');
-        
+        // 1. المباريات
+        const live = fixturesRes.filter?.(f => ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(f.status_short)) || [];
+        const upcoming = fixturesRes.filter?.(f => f.status_short === 'NS' || f.status_short === 'TBD') || [];
         setLiveMatches(live);
         setTodayMatches(upcoming);
         
-        // 2. فلترة الدوريات الشائعة لتعرض فقط الدوريات الكبرى المطلوبة بدقة
-        const filteredLeagues = leaguesRes.filter(league => 
-          TARGET_LEAGUE_IDS.includes(Number(league.league_id))
-        );
-        // إذا كان الباك إند لم يقم بمزامنة كل الدوريات بعد، نعرض المتاح أو أول 6 عناصر مرتبة
-        setLeagues(filteredLeagues.length > 0 ? filteredLeagues : leaguesRes.slice(0, 6));
+        // 2. الدوريات (عرض المتاح مباشرة بدون فلترة لضمان الظهور)
+        setLeagues(Array.isArray(leaguesRes) ? leaguesRes.slice(0, 10) : []);
         
-        // 3. ترتيب الأخبار برمجياً للتأكد من عرض "آخر وأحدث الأخبار أولاً" (Descending Order)
-        const sortedNews = articlesRes.sort((a, b) => {
-          return new Date(b.created_at || b.published_at) - new Date(a.created_at || a.published_at);
-        });
+        // 3. ترتيب الأخبار من الأحدث للأقدم
+        const sortedNews = Array.isArray(articlesRes) 
+          ? articlesRes.sort((a, b) => new Date(b.created_at || b.published_at) - new Date(a.created_at || a.published_at))
+          : [];
         setNews(sortedNews);
 
-        // 4. ضبط فيديوهات المنصة الداخلية
-        setLocalVideos(videosRes);
-        setAds(adsRes);
+        // 4. الفيديوهات الداخلية
+        setLocalVideos(Array.isArray(videosRes) ? videosRes : []);
+        setAds(Array.isArray(adsRes) ? adsRes : []);
 
-        // 5. معالجة داتا الفيديوهات الخارجية القادمة من الـ ScoreBat Proxy الخاص بك
+        // 5. الفيديوهات الخارجية
         if (extVideosRes && extVideosRes.data) {
           setExternalVideos(extVideosRes.data);
-        } else if (extVideosRes && Array.isArray(extVideosRes)) {
+        } else if (Array.isArray(extVideosRes)) {
           setExternalVideos(extVideosRes);
         }
 
@@ -95,17 +84,13 @@ const Home = () => {
     fetchHomeData();
   }, []);
 
-  // تشغيل حركات ومؤثرات دخول العناصر الاحترافية GSAP
   useEffect(() => {
     if (!loading && !error) {
       const ctx = gsap.context(() => {
         gsap.utils.toArray('.gsap-fade-in').forEach((section) => {
           gsap.fromTo(section, 
             { y: 25, opacity: 0 },
-            {
-              scrollTrigger: { trigger: section, start: "top 88%" },
-              y: 0, opacity: 1, duration: 0.6, ease: "power3.out"
-            }
+            { scrollTrigger: { trigger: section, start: "top 88%" }, y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }
           );
         });
       }, mainRef);
@@ -121,25 +106,23 @@ const Home = () => {
       <Navbar />
 
       <main ref={mainRef}>
-        {/* البانر الرئيسي - صورة جمالية نظيفة */}
+        {/* البانر الرئيسي */}
         <section className="hero-banner-section">
           <div className="hero-banner-image"></div>
           <div className="hero-banner-overlay"></div>
         </section>
 
-        {/* ⚽ قسـم المباريات المباشرة الآن */}
+        {/* ⚽ المباريات المباشرة */}
         {liveMatches.length > 0 && (
           <section className="section-layout gsap-fade-in">
             <div className="section-title-bar">
-              <h2 className="title-text"><Flame size={26} className="fire-glow-icon" /> المباريات الجارية الآن المباشرة</h2>
+              <h2 className="title-text"><Flame size={26} className="fire-glow-icon" /> المباريات الجارية الآن</h2>
             </div>
-            
             <div className="matches-responsive-grid">
               {liveMatches.slice(0, visibleLive).map(match => (
                 <MatchCardItem key={match.id} match={match} />
               ))}
             </div>
-            
             {visibleLive < liveMatches.length && (
               <div className="load-more-center">
                 <button className="premium-more-btn" onClick={() => setVisibleLive(prev => prev + 4)}>
@@ -150,12 +133,11 @@ const Home = () => {
           </section>
         )}
 
-        {/* 📅 قسـم مباريات اليوم القادمة */}
+        {/* 📅 مباريات اليوم */}
         <section className="section-layout gsap-fade-in">
           <div className="section-title-bar">
-            <h2 className="title-text"><Trophy size={26} className="color-primary" /> جدول مباريات اليوم المجدولة</h2>
+            <h2 className="title-text"><Trophy size={26} className="color-primary" /> جدول مباريات اليوم</h2>
           </div>
-          
           {todayMatches.length > 0 ? (
             <>
               <div className="matches-responsive-grid">
@@ -163,7 +145,6 @@ const Home = () => {
                   <MatchCardItem key={match.id} match={match} />
                 ))}
               </div>
-              
               {visibleToday < todayMatches.length && (
                 <div className="load-more-center">
                   <button className="premium-more-btn" onClick={() => setVisibleToday(prev => prev + 4)}>
@@ -177,15 +158,15 @@ const Home = () => {
           )}
         </section>
 
-        {/* 🏆 قسـم الدوريات الشائعة (الدوريات الستة الكبرى) */}
+        {/* 🏆 الدوريات (تأكدنا من ظهورها) */}
         {leagues.length > 0 && (
           <section className="section-layout gsap-fade-in">
             <div className="section-title-bar">
-              <h2 className="title-text">الدوريات الشائعة والكبرى</h2>
+              <h2 className="title-text">أبرز البطولات والدوريات</h2>
             </div>
             <div className="leagues-horizontal-scroll">
               {leagues.map((league) => (
-                <Link key={league.id} to={`/league/${league.league_id}/2026`} className="league-card-anchor">
+                <Link key={league.id || league.league_id} to={`/league/${league.league_id || league.id}/2026`} className="league-card-anchor">
                   <div className="league-glass-card">
                     <img src={league.logo} alt={league.name} onError={(e) => e.target.src = "https://placehold.co/80x80?text=League"} />
                     <span className="league-card-title">{league.name}</span>
@@ -196,118 +177,121 @@ const Home = () => {
           </section>
         )}
 
-        {/* 📰 قسـم أحدث الأخبار الرياضية (مرتبة تلقائياً من الأحدث للأقدم) */}
-        {news.length > 0 && (
-          <section className="section-layout gsap-fade-in">
-            <div className="section-title-bar">
-              <h2 className="title-text"><Newspaper size={26} className="color-primary" /> أحدث الأخبار والتقارير الحصرية</h2>
-            </div>
-            
-            <div className="media-bento-grid">
-              {news.slice(0, visibleNews).map(article => (
-                <div key={article.id} className="premium-media-card">
-                  <img src={article.image_url || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=600'} alt={article.title} className="media-card-img" />
-                  <div className="media-card-gradient">
-                    <span className="media-badge">أخبار عاجلة</span>
-                    <h3 className="media-card-title">{article.title}</h3>
+        {/* 📰 الأخبار (بدون صور بناءً على طلبك) */}
+        <section className="section-layout gsap-fade-in">
+          <div className="section-title-bar">
+            <h2 className="title-text"><Newspaper size={26} className="color-primary" /> أحدث الأخبار والتقارير</h2>
+          </div>
+          {news.length > 0 ? (
+            <>
+              <div className="media-bento-grid">
+                {news.slice(0, visibleNews).map(article => (
+                  <div key={article.id} className="premium-media-card text-only-card">
+                    <div className="text-card-content">
+                      <span className="media-badge">أخبار عاجلة</span>
+                      <h3 className="media-card-title text-only-title">{article.title}</h3>
+                      <p className="news-date-text">
+                        {new Date(article.created_at || article.published_at || Date.now()).toLocaleDateString('ar-EG')}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-
-            {visibleNews < news.length && (
-              <div className="load-more-center">
-                <button className="premium-more-btn" onClick={() => setVisibleNews(prev => prev + 4)}>
-                  <span>عرض المزيد من الأخبار</span> <ChevronDown size={18} />
-                </button>
+                ))}
               </div>
-            )}
-          </section>
-        )}
-
-        {/* 📹 قسـم فيديوهات المنصة (الداخلية) */}
-        {localVideos.length > 0 && (
-          <section className="section-layout gsap-fade-in">
-            <div className="section-title-bar">
-              <h2 className="title-text"><MonitorPlay size={26} className="color-primary" /> تقارير وفيديوهات منصة جرينتا</h2>
-            </div>
-            
-            <div className="media-bento-grid">
-              {localVideos.slice(0, visibleLocalVideos).map(vid => (
-                <div key={vid.id} className="premium-media-card is-video-card">
-                  <div className="video-dark-overlay">
-                    <PlayCircle size={55} className="play-icon-glow" />
-                  </div>
-                  <div className="media-card-gradient">
-                    <span className="media-badge badge-local">فيديو حصري</span>
-                    <h3 className="media-card-title">{vid.title}</h3>
-                  </div>
+              {visibleNews < news.length && (
+                <div className="load-more-center">
+                  <button className="premium-more-btn" onClick={() => setVisibleNews(prev => prev + 4)}>
+                    <span>عرض المزيد من الأخبار</span> <ChevronDown size={18} />
+                  </button>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
+          ) : (
+            <div className="empty-state-card">لا توجد أخبار متاحة في الوقت الحالي.</div>
+          )}
+        </section>
 
-            {visibleLocalVideos < localVideos.length && (
-              <div className="load-more-center">
-                <button className="premium-more-btn" onClick={() => setVisibleLocalVideos(prev => prev + 4)}>
-                  <span>عرض المزيد من الفيديوهات</span> <ChevronDown size={18} />
-                </button>
+        {/* 📹 فيديوهات المنصة */}
+        <section className="section-layout gsap-fade-in">
+          <div className="section-title-bar">
+            <h2 className="title-text"><MonitorPlay size={26} className="color-primary" /> فيديوهات المنصة</h2>
+          </div>
+          {localVideos.length > 0 ? (
+            <>
+              <div className="media-bento-grid">
+                {localVideos.slice(0, visibleLocalVideos).map(vid => (
+                  <div key={vid.id} className="premium-media-card is-video-card text-only-card">
+                    <div className="video-dark-overlay">
+                      <PlayCircle size={45} className="play-icon-glow" />
+                    </div>
+                    <div className="text-card-content justify-end">
+                      <span className="media-badge badge-local">فيديو حصري</span>
+                      <h3 className="media-card-title text-only-title">{vid.title}</h3>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </section>
-        )}
-
-        {/* 🌐 قسـم فيديوهات الـ API الخارجي (ScoreBat Highlights) */}
-        {externalVideos.length > 0 && (
-          <section className="section-layout gsap-fade-in">
-            <div className="section-title-bar">
-              <h2 className="title-text"><MonitorPlay size={26} className="color-accent" /> أهداف وملخصات الملاعب العالمية</h2>
-            </div>
-            
-            <div className="media-bento-grid">
-              {externalVideos.slice(0, visibleExtVideos).map((extVid, idx) => (
-                <div key={idx} className="premium-media-card is-video-card" onClick={() => extVid.url && window.open(extVid.url, '_blank')}>
-                  <img src={extVid.thumbnail || 'https://images.unsplash.com/photo-1518605368461-1e1e38ce8ba4?q=80&w=600'} alt={extVid.title} className="media-card-img" />
-                  <div className="video-dark-overlay">
-                    <PlayCircle size={55} className="play-icon-glow" />
-                  </div>
-                  <div className="media-card-gradient">
-                    <span className="media-badge badge-external">ملخص عالمي</span>
-                    <h3 className="media-card-title">{extVid.title || 'أهداف المباراة'}</h3>
-                  </div>
+              {visibleLocalVideos < localVideos.length && (
+                <div className="load-more-center">
+                  <button className="premium-more-btn" onClick={() => setVisibleLocalVideos(prev => prev + 4)}>
+                    <span>عرض المزيد</span> <ChevronDown size={18} />
+                  </button>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
+          ) : (
+            <div className="empty-state-card">لا توجد فيديوهات حصرية مرفوعة حالياً.</div>
+          )}
+        </section>
 
-            {visibleExtVideos < externalVideos.length && (
-              <div className="load-more-center">
-                <button className="premium-more-btn" onClick={() => setVisibleExtVideos(prev => prev + 4)}>
-                  <span>عرض المزيد من الملخصات</span> <ChevronDown size={18} />
-                </button>
+        {/* 🌐 فيديوهات الـ API الخارجي */}
+        <section className="section-layout gsap-fade-in">
+          <div className="section-title-bar">
+            <h2 className="title-text"><MonitorPlay size={26} className="color-accent" /> ملخصات عالمية (مباشر)</h2>
+          </div>
+          {externalVideos.length > 0 ? (
+            <>
+              <div className="media-bento-grid">
+                {externalVideos.slice(0, visibleExtVideos).map((extVid, idx) => (
+                  <div key={idx} className="premium-media-card is-video-card" onClick={() => extVid.url && window.open(extVid.url, '_blank')}>
+                    <img src={extVid.thumbnail || 'https://placehold.co/600x400?text=Video'} alt={extVid.title} className="media-card-img" />
+                    <div className="video-dark-overlay">
+                      <PlayCircle size={55} className="play-icon-glow" />
+                    </div>
+                    <div className="media-card-gradient">
+                      <span className="media-badge badge-external">ملخص عالمي</span>
+                      <h3 className="media-card-title">{extVid.title || 'أهداف المباراة'}</h3>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </section>
-        )}
+              {visibleExtVideos < externalVideos.length && (
+                <div className="load-more-center">
+                  <button className="premium-more-btn" onClick={() => setVisibleExtVideos(prev => prev + 4)}>
+                    <span>عرض المزيد</span> <ChevronDown size={18} />
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="empty-state-card">لا توجد ملخصات عالمية متاحة الآن. تأكد من مزامنة الـ API الخارجي.</div>
+          )}
+        </section>
+
       </main>
-
       <Footer />
     </div>
   );
 };
 
-// مكون كارت المباراة الفرعي المنفصل لضمان جودة ونظافة الكود المعماري
 const MatchCardItem = ({ match }) => {
   const isLive = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(match.status_short);
-  
   return (
     <Link to={`/match/${match.fixture_id}`} className="global-card-link-reset">
       <div className={`premium-match-card ${isLive ? 'border-pulse-live' : ''}`}>
         <div className="match-card-meta">
           <span className="league-badge-text">{match.league?.name || 'بطولة كروية'}</span>
           {isLive ? (
-            <span className="live-status-indicator">
-              <span className="pulse-dot"></span>
-              بث مباشر '{match.elapsed}
-            </span>
+            <span className="live-status-indicator"><span className="pulse-dot"></span>بث مباشر '{match.elapsed}</span>
           ) : (
             <span className="scheduled-time-indicator">
               <Calendar size={13} style={{ marginLeft: '4px' }} />
@@ -315,32 +299,24 @@ const MatchCardItem = ({ match }) => {
             </span>
           )}
         </div>
-        
         <div className="match-card-teams-area">
           <div className="team-meta-block align-left">
             <img src={match.home_team_logo} alt={match.home_team_name} onError={(e) => e.target.src='https://placehold.co/45x45?text=Team'} />
             <span className="team-name-text">{match.home_team_name}</span>
           </div>
-          
           <div className="score-display-center">
             {isLive || match.status_short === 'FT' ? (
-              <span className={`score-numbers ${isLive ? 'text-live-red' : ''}`}>
-                {match.home_score} : {match.away_score}
-              </span>
+              <span className={`score-numbers ${isLive ? 'text-live-red' : ''}`}>{match.home_score} : {match.away_score}</span>
             ) : (
               <span className="vs-badge">VS</span>
             )}
           </div>
-          
           <div className="team-meta-block align-right">
             <img src={match.away_team_logo} alt={match.away_team_name} onError={(e) => e.target.src='https://placehold.co/45x45?text=Team'} />
             <span className="team-name-text">{match.away_team_name}</span>
           </div>
         </div>
-        
-        <div className="match-card-footer-info">
-          {match.status_long}
-        </div>
+        <div className="match-card-footer-info">{match.status_long}</div>
       </div>
     </Link>
   );
