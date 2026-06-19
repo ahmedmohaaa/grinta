@@ -369,8 +369,33 @@ body {
 /* ==========================================
    تنسيق روابط قائمة الموبايل (Mobile Menu Links)
    ========================================== */
-.mobile-menu{
-margin-right: 100px;
+/* ==========================================
+   قائمة الموبايل (Mobile Menu) - الكود المعدل
+   ========================================== */
+.mobile-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0; /* تمت الإضافة لضمان التمدد الصحيح في المواقع العربية */
+  /* width: 100%; تم إيقافها لأن استخدام left و right معاً يغني عنها */
+  
+  background: var(--dark-bg);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 1rem 1.5rem 1.5rem;
+  
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+  
+  /* 🔥 إضافة ضرورية لمنع الـ padding من تكبير العرض عن الشاشة */
+  box-sizing: border-box; 
+  overflow-x: hidden; /* لمنع أي تسريب أفقي */
+  
+  /* أنيميشن الدخول للقائمة */
+  animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top;
 }
 .mobile-menu a {
   color: var(--text-light, #ffffff) !important;
