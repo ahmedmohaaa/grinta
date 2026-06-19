@@ -48,7 +48,7 @@ body {
 .hero-banner-section {
   position: relative;
   height: 40vh;
-  min-height: 300px;
+  min-height: 500px;
   width: 100%;
   overflow: hidden;
 }
