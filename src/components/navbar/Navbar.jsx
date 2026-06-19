@@ -193,8 +193,8 @@ const Navbar = () => {
           />
 
           <MobileLink
-            to="/competitions"
-            title="البطولات"
+            to="/stats"
+            title="الاحصائيات"
           />
 
         </div>
