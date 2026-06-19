@@ -1,0 +1,64 @@
+.player-details-wrapper { max-width: 1200px; margin: 100px auto 60px; padding: 0 20px; }
+
+/* Hero Section (Bento Style) */
+.player-hero-bento { display: flex; align-items: center; gap: 50px; background: linear-gradient(145deg, rgba(24,24,27,0.8), rgba(0,0,0,1)); border: 1px solid var(--border-color); border-radius: 30px; padding: 40px; margin-bottom: 40px; position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+.hero-visual { position: relative; width: 250px; height: 250px; display: flex; justify-content: center; align-items: flex-end; }
+.player-number-bg { position: absolute; top: -20px; right: -20px; font-size: 15rem; font-weight: 900; color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none; }
+.hero-player-img { width: 100%; height: 100%; object-fit: contain; position: relative; z-index: 2; filter: drop-shadow(0 20px 20px rgba(0,0,0,0.5)); }
+
+.hero-info { flex-grow: 1; z-index: 2; }
+.hero-tags { display: flex; gap: 10px; margin-bottom: 20px; }
+.hero-tag { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 50px; font-size: 0.9rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.05); }
+
+.hero-name { font-size: 3.5rem; font-weight: 900; color: #fff; margin-bottom: 20px; letter-spacing: -1px; }
+
+.hero-club { display: flex; align-items: center; gap: 15px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); padding: 15px 25px; border-radius: 16px; width: fit-content; }
+.hero-club img { width: 40px; height: 40px; object-fit: contain; }
+.hero-club h2 { font-size: 1.5rem; font-weight: bold; color: var(--accent-color); margin: 0; }
+
+/* Grid Layout for Details */
+.details-grid-layout { display: grid; grid-template-columns: repeat(12, 1fr); gap: 30px; }
+
+.info-card { background: var(--glass-bg); border: 1px solid var(--border-color); border-radius: 24px; padding: 30px; }
+.card-title { font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 25px; border-bottom: 2px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
+
+/* Column Sizing */
+.personal-info { grid-column: span 4; }
+.club-info { grid-column: span 3; text-align: center; }
+.stats-info { grid-column: span 5; }
+
+/* Lists */
+.info-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 15px; }
+.info-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+.info-list .label { color: var(--text-secondary); font-size: 0.95rem; }
+.info-list .value { color: #fff; font-weight: 600; }
+
+/* Club Info Specifics */
+.club-big-logo { display: flex; justify-content: center; margin-bottom: 20px; }
+.club-big-logo img { width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5)); }
+.rating-value { background: #fbbf24; color: #000 !important; padding: 4px 12px; border-radius: 8px; font-weight: 900 !important; }
+
+/* Stats Grid */
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
+.stat-box { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; text-align: center; transition: 0.3s; }
+.stat-box:hover { border-color: var(--accent-color); background: rgba(16,185,129,0.05); transform: translateY(-5px); }
+.stat-icon { margin: 0 auto 10px; }
+.stat-img-icon { width: 24px; height: 24px; margin: 0 auto 10px; object-fit: contain; }
+.filter-white { filter: invert(1) brightness(2); }
+.stat-num { display: block; font-size: 2rem; font-weight: 900; color: #fff; margin-bottom: 5px; }
+.stat-name { display: block; font-size: 0.85rem; color: var(--text-secondary); }
+
+/* Cards Stats */
+.cards-stats { display: flex; gap: 15px; }
+.card-box { flex: 1; display: flex; justify-content: center; align-items: center; gap: 8px; padding: 12px; border-radius: 12px; font-size: 0.9rem; font-weight: bold; }
+.card-box.yellow { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; }
+.card-box.red { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
+
+@media (max-width: 1024px) {
+  .personal-info, .club-info, .stats-info { grid-column: span 12; }
+}
+@media (max-width: 768px) {
+  .player-hero-bento { flex-direction: column; text-align: center; }
+  .hero-tags { justify-content: center; }
+  .hero-club { justify-content: center; margin: 0 auto; }
+}

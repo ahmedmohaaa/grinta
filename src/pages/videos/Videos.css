@@ -1,0 +1,212 @@
+/* Layout & Basics */
+.videos-page-wrapper {
+  max-width: 1200px;
+  margin: 100px auto 60px;
+  padding: 0 1.5rem;
+  direction: rtl;
+  min-height: 60vh;
+}
+
+/* Header */
+.videos-hero-header {
+  background: linear-gradient(135deg, rgba(24, 24, 37, 0.8) 0%, rgba(13, 13, 20, 0.9) 100%);
+  border: 1px solid var(--border-color, #27272a);
+  border-radius: 1.5rem;
+  padding: 3rem 2rem;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.videos-hero-header h1 {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.videos-hero-header p {
+  color: #a1a1aa;
+  font-size: 1.1rem;
+}
+
+/* Grid Layout */
+.videos-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+/* Video Card Premium */
+.video-card-premium {
+  background: var(--bg-dark-surface, #14141b);
+  border: 1px solid var(--border-color, #27272a);
+  border-radius: 1.25rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.video-card-premium:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent-emerald, #10b981);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);
+}
+
+.video-thumbnail-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.video-card-premium:hover .thumbnail-img {
+  transform: scale(1.05);
+}
+
+.play-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.video-card-premium:hover .play-overlay {
+  opacity: 1;
+}
+
+.play-icon {
+  color: #fff;
+  filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.8));
+  transform: scale(0.8);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.video-card-premium:hover .play-icon {
+  transform: scale(1);
+}
+
+.competition-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(16, 185, 129, 0.9);
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  backdrop-filter: blur(5px);
+}
+
+.video-card-info {
+  padding: 1.5rem;
+}
+
+.video-match-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.video-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #a1a1aa;
+}
+
+.video-type {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 6px;
+  color: #d4d4d8;
+}
+
+/* ================= Video Modal (Cinematic) ================= */
+.video-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.video-modal-content {
+  background: #09090b;
+  width: 100%;
+  max-width: 900px;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.close-modal-btn {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.2s ease;
+}
+
+.close-modal-btn:hover {
+  background: rgba(239, 68, 68, 0.8);
+}
+
+.modal-video-title {
+  padding: 1.5rem 3rem 1.5rem 1.5rem;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin: 0;
+}
+
+.embed-video-container {
+  width: 100%;
+  background: #000;
+}
+
+/* التعديل على iframe القادم من ScoreBat ليناسب الحاوية */
+.embed-video-container iframe {
+  width: 100% !important;
+  max-height: 70vh;
+}
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }

@@ -1,0 +1,220 @@
+/* Footer.css */
+.footer-wrapper {
+  background-color: #09090b;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 5rem 0 2rem;
+  margin-top: 5rem;
+  position: relative;
+  overflow: hidden;
+  color: #a1a1aa;
+}
+
+/* توهج النيون في الخلفية */
+.footer-neon-glow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 75%;
+  height: 8rem;
+  background-color: rgba(16, 185, 129, 0.08);
+  filter: blur(100px);
+  pointer-events: none;
+}
+
+.footer-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  position: relative;
+  z-index: 10;
+}
+
+/* نظام الشبكة للأعمدة */
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  margin-bottom: 4rem;
+}
+
+@media (min-width: 768px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* تصميم الشعار والنبذة */
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.footer-desc {
+  font-size: 0.875rem;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+/* أيقونات السوشيال ميديا */
+.social-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.social-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a1a1aa;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.social-icon:hover {
+  background-color: #10b981;
+  color: #000;
+  border-color: #10b981;
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+}
+
+/* عناوين الأعمدة */
+.footer-col-title {
+  color: #f4f4f5;
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.5px;
+}
+
+/* روابط الفوتر */
+.footer-links-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.footer-link-item a {
+  color: #a1a1aa;
+  text-decoration: none;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+/* حركة الخط الأخضر عند الـ Hover */
+.link-indicator {
+  width: 0;
+  height: 1px;
+  background-color: #10b981;
+  transition: all 0.3s ease;
+}
+
+.footer-link-item a:hover {
+  color: #10b981;
+}
+
+.footer-link-item a:hover .link-indicator {
+  width: 12px;
+  margin-left: 8px; /* المسافة من اليمين لأن الاتجاه RTL */
+}
+
+/* نموذج النشرة البريدية */
+.newsletter-form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.newsletter-input {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: #f4f4f5;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.newsletter-input::placeholder {
+  color: #71717a;
+}
+
+.newsletter-input:focus {
+  border-color: #10b981;
+  background-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.newsletter-btn {
+  position: absolute;
+  left: 6px; /* من اليسار لأن الاتجاه RTL */
+  background-color: #10b981;
+  color: #000;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.newsletter-btn:hover {
+  background-color: #34d399;
+  transform: scale(1.05);
+}
+
+/* الجزء السفلي (حقوق النشر) */
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .footer-bottom {
+    flex-direction: row;
+  }
+}
+
+.copyright {
+  font-size: 0.875rem;
+}
+
+.brand-highlight {
+  color: #10b981;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.footer-credits {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #71717a;
+}

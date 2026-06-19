@@ -1,0 +1,52 @@
+.team-details-wrapper { padding-bottom: 60px; }
+
+/* Hero Section (Stadium Background) */
+.team-hero { position: relative; height: 50vh; min-height: 400px; background-size: cover; background-position: center; display: flex; align-items: flex-end; padding: 0 5%; margin-bottom: 50px; }
+.hero-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(9,9,11,1) 0%, rgba(9,9,11,0.8) 40%, rgba(0,0,0,0.4) 100%); }
+
+.team-hero-content { position: relative; z-index: 10; display: flex; align-items: center; gap: 40px; transform: translateY(40px); width: 100%; max-width: 1200px; margin: 0 auto; }
+.team-logo-container { width: 180px; height: 180px; background: var(--bg-color); border: 4px solid var(--border-color); border-radius: 30px; padding: 20px; display: flex; justify-content: center; align-items: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+.team-hero-logo { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4)); }
+
+.team-hero-info { flex-grow: 1; padding-bottom: 20px; }
+.team-hero-name { font-size: 3.5rem; font-weight: 900; color: #fff; margin-bottom: 15px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+
+.team-badges { display: flex; gap: 15px; flex-wrap: wrap; }
+.info-badge { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); padding: 8px 16px; border-radius: 50px; font-size: 0.95rem; font-weight: 600; color: #e4e4e7; border: 1px solid rgba(255,255,255,0.05); }
+.info-badge.highlight { background: rgba(16,185,129,0.2); color: var(--accent-color); border-color: rgba(16,185,129,0.4); }
+
+/* Details Grid */
+.team-info-grid { max-width: 1200px; margin: 80px auto 0; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 30px; }
+
+.info-card { background: var(--glass-bg); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; }
+.card-header { background: rgba(0,0,0,0.3); padding: 20px; border-bottom: 1px solid var(--border-color); }
+.card-header h2 { font-size: 1.3rem; font-weight: 800; color: #fff; margin: 0; }
+.card-body { padding: 30px; }
+
+/* Venue Layout */
+.venue-body { display: flex; gap: 25px; }
+.venue-thumb { width: 150px; height: 150px; border-radius: 15px; object-fit: cover; box-shadow: 0 10px 20px rgba(0,0,0,0.3); border: 1px solid var(--border-color); }
+.venue-details h3 { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 10px; }
+.venue-details p { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 20px; }
+
+.capacity-box { background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+.capacity-box .label { color: var(--text-secondary); font-size: 0.9rem; }
+.capacity-box .value { font-size: 1.2rem; font-weight: 900; color: var(--accent-color); }
+
+.surface-box { display: flex; justify-content: space-between; padding: 0 5px; font-size: 0.95rem; }
+.surface-box .label { color: var(--text-secondary); }
+.surface-box .value { font-weight: bold; color: #fff; text-transform: capitalize; }
+
+/* Coach Layout */
+.coach-placeholder { display: flex; align-items: center; gap: 20px; background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); padding: 20px; border-radius: 15px; }
+.coach-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--border-color); }
+.coach-info h3 { font-size: 1.2rem; font-weight: bold; color: #fff; margin-bottom: 5px; }
+.fetch-coach-btn { margin-top: 15px; background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+.fetch-coach-btn:hover { background: var(--accent-color); color: #000; }
+
+@media (max-width: 768px) {
+  .team-hero-content { flex-direction: column; text-align: center; transform: translateY(80px); }
+  .team-badges { justify-content: center; }
+  .team-info-grid { grid-template-columns: 1fr; margin-top: 120px; }
+  .venue-body { flex-direction: column; align-items: center; text-align: center; }
+}

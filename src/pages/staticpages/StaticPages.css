@@ -1,0 +1,183 @@
+/* StaticPages.css - يخدم (من نحن، اتصل بنا، سياسة الخصوصية، الشروط) */
+.static-page-layout {
+  background-color: var(--dark-bg, #09090b);
+  min-height: 100vh;
+  color: #f4f4f5;
+  direction: rtl;
+}
+
+.static-hero {
+  background: linear-gradient(135deg, #181825 0%, #0d0d14 100%);
+  border-bottom: 1px solid #27272a;
+  padding: 6rem 1.5rem 3rem;
+  text-align: center;
+}
+
+.static-hero-icon {
+  color: var(--accent-emerald, #10b981);
+  margin: 0 auto 1rem;
+  background: rgba(16, 185, 129, 0.1);
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.static-hero h1 {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.static-hero p {
+  color: #a1a1aa;
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.static-content-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+}
+
+/* تنسيق النصوص للقراءة المريحة */
+.prose-text {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #d4d4d8;
+}
+
+.prose-text h2 {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 2.5rem 0 1rem;
+  border-bottom: 1px solid #27272a;
+  padding-bottom: 0.5rem;
+}
+
+.prose-text p {
+  margin-bottom: 1.5rem;
+}
+
+.prose-text ul {
+  list-style-type: disc;
+  margin-right: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.prose-text li {
+  margin-bottom: 0.5rem;
+}
+
+/* ================== تنسيقات خاصة بصفحة اتصل بنا ================== */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 3rem;
+  margin-top: -2rem;
+}
+
+.contact-info-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.contact-card {
+  background: #14141b;
+  border: 1px solid #27272a;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.contact-card:hover {
+  transform: translateY(-5px);
+  border-color: #10b981;
+}
+
+.contact-card-icon {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.contact-card h3 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 0.2rem;
+}
+
+.contact-card p {
+  color: #a1a1aa;
+  font-size: 0.95rem;
+}
+
+.contact-form {
+  background: #14141b;
+  border: 1px solid #27272a;
+  padding: 2rem;
+  border-radius: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  color: #d4d4d8;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.form-control {
+  width: 100%;
+  background: #09090b;
+  border: 1px solid #27272a;
+  color: #fff;
+  padding: 0.8rem 1rem;
+  border-radius: 0.5rem;
+  font-family: inherit;
+  transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #10b981;
+}
+
+.submit-btn {
+  background: #10b981;
+  color: #000;
+  border: none;
+  width: 100%;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.submit-btn:hover {
+  background: #059669;
+}
+
+@media (max-width: 768px) {
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+}

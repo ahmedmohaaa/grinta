@@ -1,0 +1,104 @@
+.details-wrapper { max-width: 1200px; margin: 100px auto 60px; padding: 0 20px; }
+
+/* Hero Section */
+.league-hero { display: flex; align-items: center; gap: 30px; background: linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid var(--border-color); padding: 40px; border-radius: 20px; margin-bottom: 40px; }
+.hero-league-logo { width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
+.hero-league-info h1 { font-size: 3rem; margin-bottom: 10px; font-weight: 900;color:#fff }
+.hero-league-info p { font-size: 1.2rem; color: var(--text-secondary); }
+
+/* Table Container */
+.section-title-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.section-title-box h2 { font-size: 1.8rem; font-weight: 800; }
+.live-update-badge { background: rgba(16,185,129,0.1); color: var(--accent-color); padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; border: 1px solid rgba(16,185,129,0.3); }
+
+/* Table Container */
+.table-container { 
+  background: var(--glass-bg); 
+  border: 1px solid var(--border-color); 
+  border-radius: 16px; 
+  overflow-x: auto; 
+  direction: rtl; /* أضفنا الاتجاه هنا للحاوية أيضاً */
+}
+
+/* إعادة ضبط الجدول ليعمل كجدول حقيقي متوازي */
+.standings-table { 
+  display: table;
+  width: 100%;
+  border-collapse: collapse; 
+  min-width: 800px; 
+  direction: rtl; 
+}
+
+.standings-table thead { display: table-header-group; }
+.standings-table tbody { display: table-row-group; }
+.standings-table tr { display: table-row; }
+
+/* توحيد المحاذاة والمسافات للعناوين والخلايا معاً */
+.standings-table th, 
+.standings-table td { 
+  padding: 15px; 
+  text-align: right; /* المحاذاة الافتراضية لليمين */
+  vertical-align: middle; 
+}
+
+.standings-table td {
+  border-bottom: 1px solid rgba(255,255,255,0.03); 
+  color: #ddd; 
+}
+
+.standings-table th { 
+  background: rgba(0,0,0,0.4); 
+  color: var(--text-secondary); 
+  font-size: 0.9rem; 
+  text-transform: uppercase; 
+  letter-spacing: 1px; 
+  border-bottom: 2px solid var(--border-color); 
+}
+
+/* توسيط العناصر المحددة وتجاوز أي محاذاة سابقة */
+.standings-table .text-center,
+.standings-table th.text-center, 
+.standings-table td.text-center { 
+  text-align: center !important; 
+}
+
+.team-row:hover { background: rgba(255,255,255,0.03); }
+
+/* --- إعدادات الفريق والمراكز --- */
+.rank-cell { width: 50px; }
+.rank-number { display: inline-block; width: 30px; height: 30px; line-height: 30px; background: rgba(255,255,255,0.1); border-radius: 50%; font-weight: bold; }
+.team-row:nth-child(-n+4) .rank-number { background: rgba(16,185,129,0.2); color: var(--accent-color); border: 1px solid rgba(16,185,129,0.5); }
+.team-row:nth-last-child(-n+3) .rank-number { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.5); }
+
+.team-name-cell { display: flex; align-items: center; gap: 15px; }
+.team-name-cell img { width: 35px; height: 35px; object-fit: contain; }
+
+.form-badges { display: flex; gap: 5px; justify-content: center; }
+.form-badge { display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center; font-size: 0.7rem; font-weight: bold; border-radius: 4px; color: #fff; }
+.form-badge.win { background: #10b981; }
+.form-badge.draw { background: #6b7280; }
+.form-badge.lose { background: #ef4444; }
+
+@media (max-width: 768px) {
+  .hide-mobile { display: none !important; } /* تمت إضافة !important لضمان الإخفاء */
+  .league-hero { flex-direction: column; text-align: center; }
+}
+.standings-table td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.03);text-align: right; /* جعل المحاذاة الافتراضية لليمين للكل */color: #ddd; vertical-align: middle; }
+.team-row:hover { background: rgba(255,255,255,0.03); }
+
+.rank-cell { width: 50px; }
+.rank-number { display: inline-block; width: 30px; height: 30px; line-height: 30px; background: rgba(255,255,255,0.1); border-radius: 50%; font-weight: bold; }
+/* تلوين أول 4 مراكز (المراكز المؤهلة للبطولات الكبرى) */
+.team-row:nth-child(-n+4) .rank-number { background: rgba(16,185,129,0.2); color: var(--accent-color); border: 1px solid rgba(16,185,129,0.5); }
+/* تلوين آخر 3 مراكز (الهبوط) */
+.team-row:nth-last-child(-n+3) .rank-number { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.5); }
+
+.team-name-cell { display: flex; align-items: center; gap: 15px; }
+.team-name-cell img { width: 35px; height: 35px; object-fit: contain; }
+
+.form-badges { display: flex; gap: 5px; justify-content: center; }
+.form-badge { display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center; font-size: 0.7rem; font-weight: bold; border-radius: 4px; color: #fff; }
+.form-badge.win { background: #10b981; }
+.form-badge.draw { background: #6b7280; }
+.form-badge.lose { background: #ef4444; }
+

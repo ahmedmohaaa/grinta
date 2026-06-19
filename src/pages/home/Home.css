@@ -1,0 +1,462 @@
+/* Home.css */
+:root {
+  --bg-color: #09090b;
+  --card-bg: rgba(24, 24, 27, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --primary: #10b981;
+  --primary-glow: rgba(16, 185, 129, 0.3);
+  --live-color: #ef4444;
+  --live-glow: rgba(239, 68, 68, 0.4);
+  --text-main: #f4f4f5;
+  --text-muted: #a1a1aa;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: 'Tajawal', 'Cairo', sans-serif;
+  overflow-x: hidden;
+}
+
+.home-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+/* =========================================
+   1. Hero Section (البانر الرئيسي)
+   ========================================= */
+.hero-section {
+  position: relative;
+  height: 85vh;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-top: 0;
+}
+
+.hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* استبدل الرابط بصورة ملعب حقيقية عالية الجودة */
+  background: url('../../assets/img1.jpeg') center/cover no-repeat;
+  filter: brightness(0.9) contrast(1);
+  z-index: 0;
+}
+
+.hero-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60%;
+  background: linear-gradient(to top, var(--bg-color) 0%, transparent 100%);
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1000px;
+  padding: 0 2rem;
+  text-align: center;
+}
+
+.hero-badge {
+  display: inline-block;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid var(--live-color);
+  color: var(--live-color);
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 0 20px var(--live-glow);
+  animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0 var(--live-glow); }
+  70% { box-shadow: 0 0 0 15px rgba(239,68,68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68, 0); }
+}
+
+.hero-match-card {
+  background: rgba(10, 10, 10, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 24px;
+  padding: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+  transform: perspective(1000px) rotateX(5deg);
+  transition: transform 0.5s ease;
+}
+
+.hero-match-card:hover {
+  transform: perspective(1000px) rotateX(0deg) translateY(-10px);
+  border-color: var(--primary);
+  box-shadow: 0 30px 60px var(--primary-glow);
+}
+
+.hero-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.hero-team-logo {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+}
+
+.hero-team-name {
+  font-size: 1.8rem;
+  font-weight: 900;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+}
+
+.hero-score-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 2rem;
+}
+
+.hero-time {
+  font-size: 1.2rem;
+  color: var(--primary);
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  letter-spacing: 2px;
+}
+
+.hero-vs {
+  font-size: 3rem;
+  font-weight: 900;
+  font-style: italic;
+  color: rgba(255,255,255,0.2);
+}
+
+.hero-btn {
+  margin-top: 3rem;
+  padding: 1rem 3rem;
+  background: linear-gradient(135deg, var(--primary), #059669);
+  color: #000;
+  font-weight: 900;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+  transition: all 0.3s ease;
+}
+
+.hero-btn:hover {
+  transform: scale(1.05);
+  filter: brightness(1.2);
+}
+
+/* =========================================
+   Section Titles & Layout
+   ========================================= */
+.section-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 5rem 1.5rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 3rem;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 1rem;
+}
+
+.section-title {
+  font-size: 2rem;
+  font-weight: 900;
+  position: relative;
+  color: #fff;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -1rem;
+  right: 0;
+  width: 50%;
+  height: 3px;
+  background: var(--primary);
+  box-shadow: 0 0 10px var(--primary-glow);
+}
+
+.view-all {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+.view-all:hover { color: #fff; }
+
+/* =========================================
+   2. Matches Grid (Live & Today)
+   ========================================= */
+.matches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.match-card {
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.match-card:hover {
+  background: rgba(30, 30, 35, 0.8);
+  border-color: rgba(255,255,255,0.2);
+  transform: translateY(-5px);
+}
+
+.match-card.is-live {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.match-card.is-live::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--live-color);
+  box-shadow: 0 0 15px var(--live-color);
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.live-indicator {
+  color: var(--live-color);
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink { 50% { opacity: 0.5; } }
+
+.match-teams {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.team-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 40%;
+}
+
+.team-row.away {
+  flex-direction: row-reverse;
+}
+
+.team-row img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.team-row span {
+  font-weight: 700;
+  font-size: 1.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.match-score-box {
+  background: rgba(0,0,0,0.5);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  color: var(--primary);
+}
+
+.match-card.is-live .match-score-box {
+  color: var(--live-color);
+}
+
+/* =========================================
+   3. Leagues Scroll (الدوريات)
+   ========================================= */
+.leagues-container {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) var(--bg-color);
+}
+
+.leagues-container::-webkit-scrollbar { height: 6px; }
+.leagues-container::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+.league-card {
+  min-width: 140px;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.league-card:hover {
+  background: var(--primary-glow);
+  border-color: var(--primary);
+  transform: translateY(-5px);
+}
+
+.league-card img { width: 60px; height: 60px; object-fit: contain; }
+.league-card span { font-weight: 700; font-size: 0.9rem; text-align: center;}
+
+/* =========================================
+   4. Grid Sections (News & Videos)
+   ========================================= */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.news-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  height: 350px;
+  cursor: pointer;
+}
+
+.news-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.news-card:hover .news-img {
+  transform: scale(1.1);
+}
+
+.news-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 2rem 1.5rem 1.5rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+}
+
+.news-tag {
+  background: var(--primary);
+  color: #000;
+  padding: 0.2rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.news-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+/* =========================================
+   5. AdSense Container
+   ========================================= */
+.adsense-container {
+  width: 100%;
+  max-width: 970px;
+  height: 90px;
+  margin: 2rem auto;
+  background: #111;
+  border: 1px dashed rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  position: relative;
+}
+.adsense-container::before {
+  content: 'إعلان ممول';
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  background: var(--bg-color);
+  padding: 0 5px;
+  font-size: 0.7rem;
+}
+
+/* =========================================
+   Responsive
+   ========================================= */
+@media (max-width: 768px) {
+  .hero-match-card {
+    flex-direction: column;
+    padding: 2rem 1rem;
+    gap: 1.5rem;
+  }
+  .hero-vs { font-size: 2rem; }
+  .section-title { font-size: 1.5rem; }
+  .matches-grid { grid-template-columns: 1fr; }
+}

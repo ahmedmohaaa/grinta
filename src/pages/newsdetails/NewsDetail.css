@@ -1,0 +1,243 @@
+/* NewsDetail.css */
+.news-detail-container {
+  min-height: 100vh;
+  background-color: var(--bg-color, #09090b);
+  color: var(--text-main, #f4f4f5);
+  padding-top: 6rem;
+  font-family: 'Tajawal', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.article-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  flex: 1;
+}
+
+/* =========================================
+   مقدمة المقال (Header)
+   ========================================= */
+.article-header {
+  margin-bottom: 3rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 2rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #10b981;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+}
+
+.back-link:hover {
+  color: #34d399;
+  transform: translateX(5px);
+}
+
+.article-main-title {
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.4;
+  margin-bottom: 1.5rem;
+}
+
+.article-meta-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  color: #a1a1aa;
+  font-size: 1rem;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.share-btn {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #10b981;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: inherit;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-right: auto; /* لدفعه لأقصى اليسار */
+}
+
+.share-btn:hover {
+  background: #10b981;
+  color: #09090b;
+}
+
+/* =========================================
+   محتوى المقال (Rich Content from CKEditor)
+   ========================================= */
+.article-rich-content {
+  font-size: 1.15rem;
+  line-height: 1.9;
+  color: #d4d4d8;
+}
+
+.article-rich-content p {
+  margin-bottom: 1.5rem;
+}
+
+/* تنسيق الصور القادمة من الـ Editor */
+.article-rich-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 16px;
+  margin: 2rem 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  display: block;
+}
+
+/* تنسيق العناوين الفرعية */
+.article-rich-content h2,
+.article-rich-content h3,
+.article-rich-content h4 {
+  color: #ffffff;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 800;
+  position: relative;
+  display: inline-block;
+}
+
+.article-rich-content h2::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  right: 0;
+  width: 40px;
+  height: 3px;
+  background-color: #10b981;
+  border-radius: 2px;
+}
+
+/* تنسيق القوائم النقطية والرقمية */
+.article-rich-content ul,
+.article-rich-content ol {
+  margin-bottom: 1.5rem;
+  padding-right: 2rem;
+}
+
+.article-rich-content li {
+  margin-bottom: 0.5rem;
+}
+
+.article-rich-content blockquote {
+  border-right: 4px solid #10b981;
+  background: rgba(24, 24, 27, 0.5);
+  padding: 1.5rem;
+  margin: 2rem 0;
+  border-radius: 8px 0 0 8px;
+  font-style: italic;
+  color: #f4f4f5;
+}
+
+/* =========================================
+   حالات التحميل والخطأ
+   ========================================= */
+.news-detail-loading,
+.news-detail-error {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.back-to-news-btn {
+  margin-top: 1.5rem;
+  background: #10b981;
+  color: #09090b;
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 800;
+  transition: all 0.3s ease;
+}
+
+.back-to-news-btn:hover {
+  background: #0ea5e9;
+  transform: translateY(-2px);
+}
+
+/* الشاشات الصغيرة */
+@media (max-width: 768px) {
+  .article-main-title { font-size: 2rem; }
+  .article-meta-info { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .share-btn { margin-right: 0; width: 100%; justify-content: center; }
+  .article-rich-content { font-size: 1.05rem; }
+}
+/* =========================================
+   تنسيقات الأخبار الخارجية
+   ========================================= */
+.external-article-img-wrapper {
+  width: 100%;
+  margin-bottom: 2.5rem;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.external-article-img {
+  width: 100%;
+  max-height: 500px;
+  object-fit: cover;
+  display: block;
+}
+
+.external-content-wrapper {
+  background: rgba(24, 24, 27, 0.3);
+  padding: 2.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.external-text {
+  font-size: 1.25rem !important;
+  line-height: 2 !important;
+  color: #e4e4e7 !important;
+  margin-bottom: 2rem !important;
+}
+
+.read-source-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  background-color: transparent;
+  color: #10b981;
+  border: 2px solid #10b981;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.read-source-btn:hover {
+  background-color: #10b981;
+  color: #09090b;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+}

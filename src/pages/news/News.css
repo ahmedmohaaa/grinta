@@ -1,0 +1,301 @@
+/* News.css */
+.news-page-container {
+  min-height: 100vh;
+  background-color: var(--bg-color, #09090b);
+  color: var(--text-main, #f4f4f5);
+  padding-top: 6rem;
+  padding-bottom: 4rem;
+  font-family: 'Tajawal', sans-serif;
+}
+
+.news-wrapper {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* =========================================
+   1. شريط البحث والفلترة العُلوي
+   ========================================= */
+.news-header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.news-page-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  position: relative;
+  display: inline-block;
+  color: #fff !important;
+}
+
+.news-page-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  right: 0;
+  width: 60%;
+  height: 4px;
+  background: linear-gradient(90deg, #10b981, transparent);
+  border-radius: 2px;
+}
+
+.news-search-box {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+.news-search-input {
+  width: 100%;
+  background: rgba(24, 24, 27, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 1rem 1rem 3rem;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.news-search-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+.news-search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a1a1aa;
+}
+
+/* =========================================
+   2. الخبر الرئيسي (Hero Article)
+   ========================================= */
+.featured-article {
+  position: relative;
+  width: 100%;
+  height: 60vh;
+  min-height: 500px;
+  border-radius: 24px;
+  overflow: hidden;
+  margin-bottom: 4rem;
+  cursor: pointer;
+  display: block;
+  text-decoration: none;
+}
+
+.featured-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.featured-article:hover .featured-img {
+  transform: scale(1.05);
+}
+
+.featured-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 3rem;
+}
+
+.featured-badge {
+  align-self: flex-start;
+  background: #ef4444;
+  color: #fff !important;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+  animation: pulse-red 2s infinite;
+}
+
+
+
+.featured-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.3;
+  margin-bottom: 1rem;
+  text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+}
+
+.featured-excerpt {
+  color: #d4d4d8;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 800px;
+  margin-bottom: 1.5rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.featured-meta {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  color: #a1a1aa;
+  font-size: 0.9rem;
+}
+
+/* =========================================
+   3. شبكة الأخبار (Bento / Masonry Style Grid)
+   ========================================= */
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+/* الكارد العادي للخبر */
+.news-item-card {
+  background: rgba(24, 24, 27, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  backdrop-filter: blur(10px);
+}
+
+.news-item-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), 0 0 15px rgba(16, 185, 129, 0.1);
+}
+
+.news-item-img-wrapper {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+}
+
+.news-item-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.news-item-card:hover .news-item-img {
+  transform: scale(1.1);
+}
+
+.news-item-content {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.news-item-date {
+  color: #10b981;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.news-item-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #f4f4f5;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  transition: color 0.3s ease;
+}
+
+.news-item-card:hover .news-item-title {
+  color: #10b981;
+}
+
+.news-item-excerpt {
+  color: #a1a1aa;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+
+.read-more-btn {
+  align-self: flex-start;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: gap 0.3s ease, color 0.3s ease;
+}
+
+.news-item-card:hover .read-more-btn {
+  color: #10b981;
+  gap: 0.8rem; /* حركة السهم لليسار */
+}
+
+/* =========================================
+   مكونات مساعدة وحالات التحميل
+   ========================================= */
+.news-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  gap: 1rem;
+  color: #10b981;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(16, 185, 129, 0.2);
+  border-left-color: #10b981;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.no-news-found {
+  text-align: center;
+  padding: 4rem;
+  background: rgba(24, 24, 27, 0.4);
+  border-radius: 16px;
+  border: 1px dashed rgba(255,255,255,0.1);
+  color: #a1a1aa;
+  grid-column: 1 / -1;
+}
+
+/* الشاشات الصغيرة */
+@media (max-width: 768px) {
+  .featured-overlay { padding: 1.5rem; }
+  .featured-title { font-size: 1.8rem; }
+  .news-header-controls { flex-direction: column; align-items: stretch; }
+  .news-search-box { max-width: 100%; }
+}

@@ -1,0 +1,42 @@
+.teams-wrapper { max-width: 1200px; margin: 100px auto 40px; padding: 0 20px; }
+
+/* Header */
+.teams-header { margin-bottom: 50px; text-align: center; }
+.teams-header .header-titles h1 { font-size: 3rem;color: #fff; font-weight: 900; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(16,185,129,0.3); }
+.teams-header .header-titles p { font-size: 1.2rem; color: var(--text-secondary); }
+
+/* Controls */
+.teams-controls { display: flex; gap: 20px; margin-top: 40px; justify-content: center; flex-wrap: wrap; }
+.search-box { width: 100%; max-width: 400px; position: relative; }
+.search-box input { width: 100%; padding: 16px 45px 16px 20px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 50px; color: #fff; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+.search-box input:focus { border-color: var(--accent-color); background: rgba(255,255,255,0.06); outline: none; box-shadow: 0 0 20px rgba(16,185,129,0.2); }
+.search-icon { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--accent-color); }
+
+.filters-box { display: flex; gap: 15px; }
+.filter-item { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); padding: 0 20px; border-radius: 50px; transition: 0.3s; }
+.filter-item:hover { border-color: var(--accent-color); }
+.filter-item select { background: transparent; color: #fff; border: none; outline: none; padding: 15px 0; cursor: pointer; font-weight: bold; }
+.filter-item select option { background: var(--bg-color); color: #fff; }
+.filter-item svg { color: var(--accent-color); }
+
+/* Grid & Cards */
+.teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 30px; margin-top: 40px; }
+.team-card { background: linear-gradient(180deg, rgba(24,24,27,0.8) 0%, rgba(9,9,11,1) 100%); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; position: relative; transition: all 0.4s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.team-card:hover { transform: translateY(-10px); border-color: rgba(16,185,129,0.4); box-shadow: 0 20px 40px rgba(16,185,129,0.15); }
+
+.team-card-header { padding: 30px 20px; background: radial-gradient(circle at top, rgba(255,255,255,0.05) 0%, transparent 70%); text-align: center; }
+.team-logo-main { width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6)); transition: 0.5s; }
+.team-card:hover .team-logo-main { transform: scale(1.1) rotate(5deg); }
+
+.team-card-body { padding: 0 20px 20px; text-align: center; }
+.team-name { font-size: 1.4rem; font-weight: 900; color: #fff; margin-bottom: 5px; }
+.team-country { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px; }
+
+.team-quick-stats { display: flex; justify-content: center; gap: 10px; }
+.stat-pill { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+.stat-label { font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; }
+.stat-value { font-size: 0.95rem; font-weight: bold; color: #fff; }
+
+.team-card-footer { padding: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
+.details-btn { display: flex; justify-content: center; align-items: center; width: 100%; padding: 12px; background: rgba(16,185,129,0.1); color: var(--accent-color); border-radius: 12px; text-decoration: none; font-weight: bold; transition: 0.3s; }
+.details-btn:hover { background: var(--accent-color); color: #000; }
