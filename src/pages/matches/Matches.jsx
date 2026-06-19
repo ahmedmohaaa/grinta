@@ -119,7 +119,6 @@ const Matches = () => {
       <main className="matches-wrapper">
         <section className="controls-section">
           <div className="search-bar">
-            <Search className="search-icon" size={20} />
             <input 
               type="text" 
               className="search-input" 
