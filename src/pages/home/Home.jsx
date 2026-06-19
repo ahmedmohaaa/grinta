@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { PlayCircle, Flame, AlertCircle, ChevronDown, Trophy, Newspaper, MonitorPlay, Calendar } from 'lucide-react';
+import { PlayCircle, Flame, AlertCircle, ChevronDown, Trophy, Newspaper, MonitorPlay, Calendar, X } from 'lucide-react';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import './Home.css';
@@ -32,6 +32,9 @@ const Home = () => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // --- حالة التحكم بالنافذة المنبثقة للفيديو ---
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
   useEffect(() => {
     const fetchHomeData = async () => {
@@ -97,6 +100,9 @@ const Home = () => {
       return () => ctx.revert();
     }
   }, [loading, error, visibleLive, visibleToday, visibleNews, visibleLocalVideos, visibleExtVideos]);
+
+  // دالة إغلاق الفيديو
+  const closeModal = () => setSelectedVideo(null);
 
   if (loading) return <div className="grinta-loading-wrapper" dir="rtl"><div className="grinta-spinner"></div><p>جاري مزامنة البيانات المباشرة...</p></div>;
   if (error) return <div className="grinta-error-wrapper" dir="rtl"><AlertCircle size={50} className="error-pulse" /><p>{error}</p></div>;
@@ -177,7 +183,7 @@ const Home = () => {
           </section>
         )}
 
-        {/* 📰 الأخبار (بدون صور بناءً على طلبك) */}
+        {/* 📰 الأخبار (تم التعديل لتنقل لصفحة تفاصيل الخبر) */}
         <section className="section-layout gsap-fade-in">
           <div className="section-title-bar">
             <h2 className="title-text"><Newspaper size={26} className="color-primary" /> أحدث الأخبار والتقارير</h2>
@@ -186,15 +192,17 @@ const Home = () => {
             <>
               <div className="media-bento-grid">
                 {news.slice(0, visibleNews).map(article => (
-                  <div key={article.id} className="premium-media-card text-only-card">
-                    <div className="text-card-content">
-                      <span className="media-badge">أخبار عاجلة</span>
-                      <h3 className="media-card-title text-only-title">{article.title}</h3>
-                      <p className="news-date-text">
-                        {new Date(article.created_at || article.published_at || Date.now()).toLocaleDateString('ar-EG')}
-                      </p>
+                  <Link key={article.id} to={`/news/${article.id}`} className="global-card-link-reset" style={{ display: 'block' }}>
+                    <div className="premium-media-card text-only-card">
+                      <div className="text-card-content">
+                        <span className="media-badge">أخبار عاجلة</span>
+                        <h3 className="media-card-title text-only-title">{article.title}</h3>
+                        <p className="news-date-text">
+                          {new Date(article.created_at || article.published_at || Date.now()).toLocaleDateString('ar-EG')}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
               {visibleNews < news.length && (
@@ -210,25 +218,35 @@ const Home = () => {
           )}
         </section>
 
-        {/* 📹 فيديوهات المنصة */}
+        {/* 📹 فيديوهات المنصة (تم التعديل بناءً على طلبك) */}
         <section className="section-layout gsap-fade-in">
           <div className="section-title-bar">
-            <h2 className="title-text"><MonitorPlay size={26} className="color-primary" /> فيديوهات المنصة</h2>
+            <h2 className="title-text"><MonitorPlay size={26} className="color-primary" /> ملخصات المباريات</h2>
           </div>
           {localVideos.length > 0 ? (
             <>
               <div className="media-bento-grid">
-                {localVideos.slice(0, visibleLocalVideos).map(vid => (
-                  <div key={vid.id} className="premium-media-card is-video-card text-only-card">
-                    <div className="video-dark-overlay">
-                      <PlayCircle size={45} className="play-icon-glow" />
+                {localVideos.slice(0, visibleLocalVideos).map((vid, index) => {
+                  const mainVideo = vid.videos && vid.videos.length > 0 ? vid.videos[0] : null;
+                  if (!mainVideo) return null;
+
+                  return (
+                    <div 
+                      key={index} 
+                      className="premium-media-card is-video-card" 
+                      onClick={() => setSelectedVideo({ title: vid.title, embed: mainVideo.embed })}
+                      style={{ cursor: 'pointer', backgroundImage: `url(${vid.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                    >
+                      <div className="video-dark-overlay">
+                        <PlayCircle size={45} className="play-icon-glow" />
+                      </div>
+                      <div className="text-card-content justify-end">
+                        <span className="media-badge badge-local">{vid.competition || 'فيديو حصري'}</span>
+                        <h3 className="media-card-title text-only-title text-white">{vid.title}</h3>
+                      </div>
                     </div>
-                    <div className="text-card-content justify-end">
-                      <span className="media-badge badge-local">فيديو حصري</span>
-                      <h3 className="media-card-title text-only-title">{vid.title}</h3>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               {visibleLocalVideos < localVideos.length && (
                 <div className="load-more-center">
@@ -279,6 +297,24 @@ const Home = () => {
 
       </main>
       <Footer />
+
+      {/* ================= Video Modal (النافذة المنبثقة للعرض السينمائي) ================= */}
+      {selectedVideo && (
+        <div className="video-modal-overlay" onClick={closeModal}>
+          <div className="video-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal-btn" onClick={closeModal}>
+              <X size={24} />
+            </button>
+            <h3 className="modal-video-title">{selectedVideo.title}</h3>
+            
+            <div 
+              className="embed-video-container"
+              dangerouslySetInnerHTML={{ __html: selectedVideo.embed }}
+            />
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
