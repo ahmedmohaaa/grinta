@@ -166,3 +166,106 @@
   .hide-mobile { display: none; }
   .stats-dual-grid { grid-template-columns: 1fr; }
 }
+
+/* ===================================================
+   Responsive (التجاوب الكامل مع الهواتف الذكية)
+   =================================================== */
+@media (max-width: 768px) {
+  /* إخفاء العناصر المخصصة للشاشات الكبيرة إن وجدت */
+  .hide-mobile { display: none; }
+
+  /* 1. ضبط مسافات الصفحة الأساسية */
+  .standings-page-wrapper {
+    margin: 80px auto 2rem;
+    padding: 0 1rem;
+  }
+
+  /* 2. إصلاح الهيدر والعنوان */
+  .page-header-premium {
+    padding: 1.5rem 1rem; /* تقليل الهوامش الداخلية لترك مساحة للمحتوى */
+    margin-bottom: 2rem;
+  }
+
+  .header-icon {
+    width: 60px;
+    height: 60px;
+    padding: 12px;
+  }
+
+  .page-header-premium h1 {
+    font-size: 1.6rem; /* تصغير الخط ليناسب الشاشة */
+    line-height: 1.4;
+  }
+
+  .page-header-premium p {
+    font-size: 0.95rem;
+  }
+
+  /* 3. إصلاح القوائم المنسدلة (الفلاتر) */
+  .header-controls {
+    flex-direction: column; /* تحويلها لعمود بدلاً من التزاحم الأفقي */
+    gap: 0.8rem;
+    width: 100%;
+  }
+
+  .premium-select {
+    width: 100%; /* جعل الزر بعرض الشاشة ليكون مريحاً لضغط الإصبع */
+  }
+
+  /* 4. إصلاح شبكة الإحصائيات والكروت */
+  .stats-dual-grid {
+    grid-template-columns: 1fr; /* إجبار الأعمدة لتكون تحت بعضها */
+    gap: 1.5rem;
+  }
+
+  .stat-card-column {
+    padding: 1.25rem; /* تقليل الحواف لكسب مساحة أطول لأسماء اللاعبين */
+  }
+
+  .stat-column-header h2 {
+    font-size: 1.15rem;
+  }
+
+  /* 5. ضبط صف اللاعب (تجنب تداخل الأرقام والأسماء) */
+  .stat-player-row {
+    padding: 0.75rem;
+  }
+
+  .stat-rank {
+    width: 30px;
+    font-size: 1rem;
+  }
+
+  .stat-player-img {
+    margin-left: 0.5rem; /* تقليل المسافة بين الصورة والاسم */
+    width: 40px;
+    height: 40px;
+  }
+
+  .stat-player-info h4 {
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* قص الأسماء الطويلة جداً بنقاط ... */
+    max-width: 120px; /* ضمان عدم دفع النتيجة للخارج */
+  }
+
+  .stat-score-value {
+    font-size: 1.1rem;
+    padding: 0.4rem 0.6rem;
+  }
+}
+
+/* دعم إضافي للشاشات الصغيرة جداً (أقل من 400px) */
+@media (max-width: 400px) {
+  .page-header-premium h1 {
+    font-size: 1.4rem;
+  }
+  .stat-player-info h4 {
+    max-width: 90px; /* تقليص المساحة المسموحة للاسم بشكل أكبر */
+    font-size: 0.85rem;
+  }
+  .stat-score-value {
+    font-size: 1rem;
+  }
+}
