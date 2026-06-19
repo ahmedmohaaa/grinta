@@ -58,3 +58,70 @@
 .page-btn:hover:not(:disabled) { border-color: var(--accent-color); color: var(--accent-color); }
 .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .page-indicator { font-weight: bold; color: var(--text-secondary); }
+/* ===================================================
+   Responsive (التجاوب الكامل مع الهواتف الذكية)
+   =================================================== */
+@media (max-width: 768px) {
+  /* 1. إصلاح المساحات الخارجية */
+  .players-wrapper { 
+    margin: 80px auto 20px; 
+    padding: 0 15px; 
+  }
+
+  /* 2. إصلاح العنوان الرئيسي وتداخل الكلمات */
+  .players-header h1 { 
+    font-size: 1.8rem; /* تصغير الخط ليناسب شاشة الهاتف */
+    display: flex;
+    flex-wrap: wrap; /* السماح للأيقونة والنص بالنزول بمرونة */
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    line-height: 1.4;
+  }
+
+  .players-header p { 
+    font-size: 0.95rem; 
+    padding: 0 10px;
+  }
+
+  /* 3. إصلاح صندوق البحث والفلاتر */
+  .players-controls-bento {
+    padding: 15px;
+    gap: 15px;
+  }
+
+  /* تأكيد تصنيف الفلاتر بشكل عمودي بدلاً من التزاحم الأفقي */
+  .filters-row { 
+    flex-direction: column; 
+    gap: 10px;
+  }
+
+  .filter-group { 
+    width: 100%; 
+    min-width: 100%;
+  }
+
+  /* 4. تعديل شبكة البطاقات (التريند واللاعبين) */
+  .trending-grid,
+  .players-grid { 
+    grid-template-columns: 1fr; /* عرض بطاقة واحدة في السطر للموبايل */
+  }
+
+  /* 5. إصلاح أزرار التنقل (Pagination) */
+  .pagination-controls {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .page-btn {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+  }
+}
+
+/* دعم إضافي للشاشات الصغيرة جداً */
+@media (max-width: 400px) {
+  .players-header h1 {
+    font-size: 1.5rem;
+  }
+}
