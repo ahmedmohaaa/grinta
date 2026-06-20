@@ -17,7 +17,7 @@ const Home = () => {
   // --- حالات تخزين البيانات ---
   const [liveMatches, setLiveMatches] = useState([]);
   const [todayMatches, setTodayMatches] = useState([]);
-  const [pastMatches, setPastMatches] = useState([]); // حالة المباريات السابقة
+  const [pastMatches, setPastMatches] = useState([]); 
   const [news, setNews] = useState([]);
   const [localVideos, setLocalVideos] = useState([]);
   const [externalVideos, setExternalVideos] = useState([]);
@@ -26,7 +26,7 @@ const Home = () => {
   // --- التحكم في عرض العناصر ---
   const [visibleLive, setVisibleLive] = useState(4);
   const [visibleToday, setVisibleToday] = useState(4);
-  const [visiblePast, setVisiblePast] = useState(4); // التحكم بعدد المباريات السابقة
+  const [visiblePast, setVisiblePast] = useState(4); 
   const [visibleNews, setVisibleNews] = useState(4);
   const [visibleLocalVideos, setVisibleLocalVideos] = useState(4);
   const [visibleExtVideos, setVisibleExtVideos] = useState(6); 
