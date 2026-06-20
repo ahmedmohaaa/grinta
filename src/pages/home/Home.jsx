@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { PlayCircle, Flame, AlertCircle, ChevronDown, Trophy, Newspaper, MonitorPlay, Calendar, X } from 'lucide-react';
+import { PlayCircle, Flame, AlertCircle, ChevronDown, Trophy, Newspaper, MonitorPlay, Calendar, X, CheckCircle } from 'lucide-react';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import './Home.css';
@@ -17,7 +17,7 @@ const Home = () => {
   // --- حالات تخزين البيانات ---
   const [liveMatches, setLiveMatches] = useState([]);
   const [todayMatches, setTodayMatches] = useState([]);
-  const [pastMatches, setPastMatches] = useState([]); // التعديل: إضافة حالة المباريات السابقة
+  const [pastMatches, setPastMatches] = useState([]); // حالة المباريات السابقة
   const [news, setNews] = useState([]);
   const [localVideos, setLocalVideos] = useState([]);
   const [externalVideos, setExternalVideos] = useState([]);
@@ -26,7 +26,7 @@ const Home = () => {
   // --- التحكم في عرض العناصر ---
   const [visibleLive, setVisibleLive] = useState(4);
   const [visibleToday, setVisibleToday] = useState(4);
-  const [visiblePast, setVisiblePast] = useState(4); // التعديل: التحكم في عرض المباريات السابقة
+  const [visiblePast, setVisiblePast] = useState(4); // التحكم بعدد المباريات السابقة
   const [visibleNews, setVisibleNews] = useState(4);
   const [visibleLocalVideos, setVisibleLocalVideos] = useState(4);
   const [visibleExtVideos, setVisibleExtVideos] = useState(6); 
@@ -50,30 +50,48 @@ const Home = () => {
           fetch(`${API_BASE_URL}/proxy/highlights/`).then(res => res.json()).catch(() => null)
         ]);
 
-        // 1. المباريات
-        const live = fixturesRes.filter?.(f => ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(f.status_short)) || [];
-        const upcoming = fixturesRes.filter?.(f => f.status_short === 'NS' || f.status_short === 'TBD') || [];
+        // --- الفلترة الذكية للمباريات لحل مشكلة التضارب ---
         
-        // التعديل: فلترة المباريات التي انتهت (FT: الوقت الأصلي، AET: الأشواط الإضافية، PEN: ركلات الترجيح)
-        const finished = fixturesRes.filter?.(f => ['FT', 'AET', 'PEN'].includes(f.status_short)) || [];
-        // ترتيب المباريات السابقة من الأحدث للأقدم بناءً على التاريخ
+        // 1. المباريات المباشرة: نضمن أنها لايف ولا تحتوي على كلمات تفيد الانتهاء
+        const live = fixturesRes.filter?.(f => {
+            const isLiveStatus = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(f.status_short);
+            const isFinishedStr = f.status_long?.toLowerCase().includes('انتهت') || f.status_long?.toLowerCase().includes('finished');
+            return isLiveStatus && f.status_short !== 'FT' && !isFinishedStr;
+        }) || [];
+
+        // 2. المباريات السابقة (المنتهية)
+        const finished = fixturesRes.filter?.(f => {
+            const isFinishedStatus = ['FT', 'AET', 'PEN'].includes(f.status_short);
+            const isFinishedStr = f.status_long?.toLowerCase().includes('انتهت') || f.status_long?.toLowerCase().includes('finished');
+            return isFinishedStatus || isFinishedStr;
+        }) || [];
+        
+        // ترتيب المباريات السابقة من الأحدث إلى الأقدم
         const sortedFinished = finished.sort((a, b) => new Date(b.date) - new Date(a.date));
 
+        // 3. المباريات القادمة (مباريات اليوم التي لم تبدأ)
+        const upcoming = fixturesRes.filter?.(f => {
+            const isUpcomingStatus = ['NS', 'TBD'].includes(f.status_short);
+            // التأكد من أنها ليست في المباشر ولا في المنتهي
+            const notLiveOrFinished = !live.some(lm => lm.fixture_id === f.fixture_id) && !finished.some(fm => fm.fixture_id === f.fixture_id);
+            return isUpcomingStatus && notLiveOrFinished;
+        }) || [];
+
         setLiveMatches(live);
+        setPastMatches(sortedFinished);
         setTodayMatches(upcoming);
-        setPastMatches(sortedFinished); // التعديل: تعيين البيانات المرتبة لـ pastMatches
         
-        // 2. ترتيب الأخبار من الأحدث للأقدم
+        // 4. ترتيب الأخبار من الأحدث للأقدم
         const sortedNews = Array.isArray(articlesRes) 
           ? articlesRes.sort((a, b) => new Date(b.created_at || b.published_at) - new Date(a.created_at || a.published_at))
           : [];
         setNews(sortedNews);
 
-        // 3. الفيديوهات والإعلانات
+        // 5. الفيديوهات والإعلانات
         setLocalVideos(Array.isArray(videosRes) ? videosRes : []);
         setAds(Array.isArray(adsRes) ? adsRes : []);
 
-        // 4. الفيديوهات الخارجية 
+        // 6. الفيديوهات الخارجية 
         if (extVideosRes && extVideosRes.data) {
           setExternalVideos(extVideosRes.data);
         } else if (Array.isArray(extVideosRes)) {
@@ -103,7 +121,6 @@ const Home = () => {
       }, mainRef);
       return () => ctx.revert();
     }
-    // التعديل: إضافة visiblePast إلى مصفوفة الاعتمادات لـ GSAP
   }, [loading, error, visibleLive, visibleToday, visiblePast, visibleNews, visibleLocalVideos, visibleExtVideos]);
 
   const closeModal = () => setSelectedVideo(null);
@@ -143,10 +160,10 @@ const Home = () => {
           </section>
         )}
 
-        {/* 📅 مباريات اليوم */}
+        {/* 📅 مباريات اليوم (القادمة) */}
         <section className="section-layout gsap-fade-in">
           <div className="section-title-bar">
-            <h2 className="title-text"><Trophy size={26} className="color-primary" /> جدول مباريات اليوم</h2>
+            <h2 className="title-text"><Calendar size={26} className="color-primary mr-2" /> مباريات اليوم القادمة</h2>
           </div>
           {todayMatches.length > 0 ? (
             <>
@@ -168,28 +185,28 @@ const Home = () => {
           )}
         </section>
 
-        {/* 🏁 التعديل: قسم نتائح المباريات السابقة (مباشرة تحت مباريات اليوم) */}
+        {/* 🏁 نتائج المباريات السابقة */}
         <section className="section-layout gsap-fade-in">
           <div className="section-title-bar">
-            <h2 className="title-text"><Calendar size={26} className="color-primary" /> نتائج المباريات السابقة</h2>
+            <h2 className="title-text"><CheckCircle size={26} className="text-gray-400 mr-2" /> نتائج المباريات السابقة</h2>
           </div>
           {pastMatches.length > 0 ? (
             <>
               <div className="matches-responsive-grid">
                 {pastMatches.slice(0, visiblePast).map(match => (
-                  <MatchCardItem key={match.id} match={match} />
+                  <MatchCardItem key={match.id} match={match} isPast={true} />
                 ))}
               </div>
               {visiblePast < pastMatches.length && (
                 <div className="load-more-center">
                   <button className="premium-more-btn" onClick={() => setVisiblePast(prev => prev + 4)}>
-                    <span>عرض المزيد من المباريات السابقة</span> <ChevronDown size={18} />
+                    <span>عرض المزيد من النتائج</span> <ChevronDown size={18} />
                   </button>
                 </div>
               )}
             </>
           ) : (
-            <div className="empty-state-card">لا توجد نتائج مباريات سابقة متاحة.</div>
+            <div className="empty-state-card">لا توجد نتائج لمباريات سابقة.</div>
           )}
         </section>
 
@@ -355,10 +372,10 @@ const Home = () => {
   );
 };
 
-const MatchCardItem = ({ match }) => {
+const MatchCardItem = ({ match, isPast = false }) => {
   const isLive = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(match.status_short);
-  // التعديل: التحقق مما إذا كانت المباراة منتهية لتثبيت إظهار النتيجة بدلاً من VS
-  const isFinished = ['FT', 'AET', 'PEN'].includes(match.status_short);
+  // نظهر النتيجة إذا كانت المباراة لايف، أو إذا كانت في قسم "السابقة" (isPast)، أو إذا كان الـ status_short يدل على الانتهاء
+  const showScore = isLive || isPast || ['FT', 'AET', 'PEN'].includes(match.status_short);
 
   return (
     <Link to={`/match/${match.fixture_id}`} className="global-card-link-reset">
@@ -380,8 +397,7 @@ const MatchCardItem = ({ match }) => {
             <span className="team-name-text">{match.home_team_name}</span>
           </div>
           <div className="score-display-center">
-            {/* التعديل: إظهار الأرقام إذا كانت المباراة لايف أو منتهية */}
-            {isLive || isFinished ? (
+            {showScore ? (
               <span className={`score-numbers ${isLive ? 'text-live-red' : ''}`}>{match.home_score} : {match.away_score}</span>
             ) : (
               <span className="vs-badge">VS</span>
