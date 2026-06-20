@@ -11,6 +11,15 @@ gsap.registerPlugin(ScrollTrigger);
 
 const API_BASE_URL = 'https://api.algrinta.com/api';
 
+// دالة مساعدة للتحقق مما إذا كان قد مر وقت طويل على المباراة (أكثر من 3.5 ساعات)
+const isOverdue = (matchDate) => {
+  if (!matchDate) return false;
+  const matchTime = new Date(matchDate).getTime();
+  const now = new Date().getTime();
+  const hoursElapsed = (now - matchTime) / (1000 * 60 * 60);
+  return hoursElapsed > 3.5;
+};
+
 const Home = () => {
   const mainRef = useRef(null);
 
@@ -52,18 +61,18 @@ const Home = () => {
 
         // --- الفلترة الذكية للمباريات لحل مشكلة التضارب ---
         
-        // 1. المباريات المباشرة: نضمن أنها لايف ولا تحتوي على كلمات تفيد الانتهاء
+        // 1. المباريات المباشرة: نضمن أنها لايف، ولا تحتوي على كلمات انتهاء، ولم يمر عليها وقت طويل
         const live = fixturesRes.filter?.(f => {
             const isLiveStatus = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(f.status_short);
             const isFinishedStr = f.status_long?.toLowerCase().includes('انتهت') || f.status_long?.toLowerCase().includes('finished');
-            return isLiveStatus && f.status_short !== 'FT' && !isFinishedStr;
+            return isLiveStatus && f.status_short !== 'FT' && !isFinishedStr && !isOverdue(f.date);
         }) || [];
 
-        // 2. المباريات السابقة (المنتهية)
+        // 2. المباريات السابقة (المنتهية + المباريات العالقة التي مر عليها وقت طويل)
         const finished = fixturesRes.filter?.(f => {
             const isFinishedStatus = ['FT', 'AET', 'PEN'].includes(f.status_short);
             const isFinishedStr = f.status_long?.toLowerCase().includes('انتهت') || f.status_long?.toLowerCase().includes('finished');
-            return isFinishedStatus || isFinishedStr;
+            return isFinishedStatus || isFinishedStr || isOverdue(f.date);
         }) || [];
         
         // ترتيب المباريات السابقة من الأحدث إلى الأقدم
@@ -74,7 +83,9 @@ const Home = () => {
             const isUpcomingStatus = ['NS', 'TBD'].includes(f.status_short);
             // التأكد من أنها ليست في المباشر ولا في المنتهي
             const notLiveOrFinished = !live.some(lm => lm.fixture_id === f.fixture_id) && !finished.some(fm => fm.fixture_id === f.fixture_id);
-            return isUpcomingStatus && notLiveOrFinished;
+            // التأكد من أن وقتها لم يأتِ بعد (لتجنب إظهار مباريات منسية قديمة)
+            const isFuture = new Date(f.date).getTime() > new Date().getTime() - (60 * 60 * 1000);
+            return isUpcomingStatus && notLiveOrFinished && isFuture;
         }) || [];
 
         setLiveMatches(live);
