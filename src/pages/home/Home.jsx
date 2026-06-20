@@ -40,7 +40,6 @@ const Home = () => {
       try {
         setLoading(true);
         
-        // إزالة طلب الدوريات لتخفيف الحمل والاكتفاء بالبيانات المطلوبة
         const [fixturesRes, articlesRes, videosRes, adsRes, extVideosRes] = await Promise.all([
           fetch(`${API_BASE_URL}/fixtures/`).then(res => res.json()).catch(() => []),
           fetch(`${API_BASE_URL}/articles/`).then(res => res.json()).catch(() => []),
@@ -159,22 +158,17 @@ const Home = () => {
           )}
         </section>
 
-        {/* 📢 قسم الإعلانات */}
+        {/* 📢 قسم الإعلانات النشطة المرجعة من قاعدة البيانات */}
         {ads.length > 0 && (
           <section className="section-layout gsap-fade-in">
-            <div className="ads-container" style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap', margin: '20px 0' }}>
-              {ads.map((ad, index) => (
-                <div key={ad.id || index} className="ad-banner" style={{ width: '100%', maxWidth: '800px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                  {/* دعم عرض صورة الإعلان برابط، أو عرض كود إعلاني مثل Google Adsense */}
-                  {ad.image ? (
-                    <a href={ad.link || '#'} target="_blank" rel="noopener noreferrer">
-                      <img src={ad.image} alt={ad.name || 'إعلان'} style={{ width: '100%', height: 'auto', display: 'block' }} />
-                    </a>
-                  ) : ad.code ? (
-                    <div dangerouslySetInnerHTML={{ __html: ad.code }} />
+            <div className="ads-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', margin: '20px 0' }}>
+              {ads.filter(ad => ad.status === 'active').map((ad, index) => (
+                <div key={ad.id || index} className="ad-banner" style={{ width: '100%', maxWidth: '800px', borderRadius: '8px', overflow: 'hidden', display: 'flex', justifyContent: 'center' }}>
+                  {ad.code ? (
+                    <div style={{ width: '100%' }} dangerouslySetInnerHTML={{ __html: ad.code }} />
                   ) : (
-                    <div style={{ padding: '20px', background: '#f5f5f5', textAlign: 'center', color: '#666' }}>
-                      {ad.name || 'مساحة إعلانية'}
+                    <div style={{ padding: '15px', background: '#1e293b', borderRadius: '8px', textAlign: 'center', color: '#94a3b8', width: '100%' }}>
+                      {ad.name}
                     </div>
                   )}
                 </div>
