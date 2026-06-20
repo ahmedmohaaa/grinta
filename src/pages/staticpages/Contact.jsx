@@ -33,7 +33,7 @@ const Contact = () => {
               <div className="contact-card-icon"><MapPin size={24} /></div>
               <div>
                 <h3>المقر الرئيسي</h3>
-                <p>أسيوط، جمهورية مصر العربية</p>
+                <p>القاهرة، جمهورية مصر العربية</p>
               </div>
             </div>
 
@@ -41,7 +41,7 @@ const Contact = () => {
               <div className="contact-card-icon"><Mail size={24} /></div>
               <div>
                 <h3>البريد الإلكتروني</h3>
-                <p>support@grinta-app.com</p>
+                <p>Algrinta10@gmail.com</p>
               </div>
             </div>
 
