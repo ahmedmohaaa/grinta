@@ -11,16 +11,12 @@ gsap.registerPlugin(ScrollTrigger);
 
 const API_BASE_URL = 'https://api.algrinta.com/api';
 
-// معرفات الدوريات الستة المطلوبة (الانجليزي، الاسباني، الايطالي، الفرنسي، المصري، السعودي)
-const TARGET_LEAGUE_IDS = [39, 140, 135, 61, 233, 307];
-
 const Home = () => {
   const mainRef = useRef(null);
 
   // --- حالات تخزين البيانات ---
   const [liveMatches, setLiveMatches] = useState([]);
   const [todayMatches, setTodayMatches] = useState([]);
-  const [leagues, setLeagues] = useState([]);
   const [news, setNews] = useState([]);
   const [localVideos, setLocalVideos] = useState([]);
   const [externalVideos, setExternalVideos] = useState([]);
@@ -31,7 +27,7 @@ const Home = () => {
   const [visibleToday, setVisibleToday] = useState(4);
   const [visibleNews, setVisibleNews] = useState(4);
   const [visibleLocalVideos, setVisibleLocalVideos] = useState(4);
-  const [visibleExtVideos, setVisibleExtVideos] = useState(6); // 👈 يبدأ بـ 6 فيديوهات خارجية حسب طلبك
+  const [visibleExtVideos, setVisibleExtVideos] = useState(6); 
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,13 +40,13 @@ const Home = () => {
       try {
         setLoading(true);
         
-        const [fixturesRes, leaguesRes, articlesRes, videosRes, adsRes, extVideosRes] = await Promise.all([
+        // إزالة طلب الدوريات لتخفيف الحمل والاكتفاء بالبيانات المطلوبة
+        const [fixturesRes, articlesRes, videosRes, adsRes, extVideosRes] = await Promise.all([
           fetch(`${API_BASE_URL}/fixtures/`).then(res => res.json()).catch(() => []),
-          fetch(`${API_BASE_URL}/leagues/`).then(res => res.json()).catch(() => []),
           fetch(`${API_BASE_URL}/articles/`).then(res => res.json()).catch(() => []),
           fetch(`${API_BASE_URL}/videos/`).then(res => res.json()).catch(() => []),
           fetch(`${API_BASE_URL}/ads/?page=home`).then(res => res.json()).catch(() => []),
-          fetch(`${API_BASE_URL}/proxy/highlights/`).then(res => res.json()).catch(() => null) // مسار ScoreBat
+          fetch(`${API_BASE_URL}/proxy/highlights/`).then(res => res.json()).catch(() => null)
         ]);
 
         // 1. المباريات
@@ -59,25 +55,17 @@ const Home = () => {
         setLiveMatches(live);
         setTodayMatches(upcoming);
         
-        // 2. فلترة الدوريات القوية (عرض الدوريات الـ 6 المطلوبة أولاً)
-        if (Array.isArray(leaguesRes)) {
-          const topLeagues = leaguesRes.filter(league => TARGET_LEAGUE_IDS.includes(Number(league.league_id || league.id)));
-          // ترتيبها لتظهر بنفس الترتيب الذي طلبته
-          topLeagues.sort((a, b) => TARGET_LEAGUE_IDS.indexOf(Number(a.league_id || a.id)) - TARGET_LEAGUE_IDS.indexOf(Number(b.league_id || b.id)));
-          setLeagues(topLeagues.length > 0 ? topLeagues : leaguesRes.slice(0, 6));
-        }
-        
-        // 3. ترتيب الأخبار من الأحدث للأقدم
+        // 2. ترتيب الأخبار من الأحدث للأقدم
         const sortedNews = Array.isArray(articlesRes) 
           ? articlesRes.sort((a, b) => new Date(b.created_at || b.published_at) - new Date(a.created_at || a.published_at))
           : [];
         setNews(sortedNews);
 
-        // 4. الفيديوهات الداخلية
+        // 3. الفيديوهات والإعلانات
         setLocalVideos(Array.isArray(videosRes) ? videosRes : []);
         setAds(Array.isArray(adsRes) ? adsRes : []);
 
-        // 5. الفيديوهات الخارجية (معالجة بناءً على بنية ScoreBat)
+        // 4. الفيديوهات الخارجية 
         if (extVideosRes && extVideosRes.data) {
           setExternalVideos(extVideosRes.data);
         } else if (Array.isArray(extVideosRes)) {
@@ -109,7 +97,6 @@ const Home = () => {
     }
   }, [loading, error, visibleLive, visibleToday, visibleNews, visibleLocalVideos, visibleExtVideos]);
 
-  // دالة إغلاق الفيديو
   const closeModal = () => setSelectedVideo(null);
 
   if (loading) return <div className="grinta-loading-wrapper" dir="rtl"><div className="grinta-spinner"></div><p>جاري مزامنة البيانات المباشرة...</p></div>;
@@ -172,20 +159,25 @@ const Home = () => {
           )}
         </section>
 
-        {/* 🏆 الدوريات (الكبرى والمحلية) */}
-        {leagues.length > 0 && (
+        {/* 📢 قسم الإعلانات */}
+        {ads.length > 0 && (
           <section className="section-layout gsap-fade-in">
-            <div className="section-title-bar">
-              <h2 className="title-text">أبرز البطولات والدوريات</h2>
-            </div>
-            <div className="leagues-horizontal-scroll">
-              {leagues.map((league) => (
-                <Link key={league.id || league.league_id} to={`/league/${league.league_id || league.id}/2026`} className="league-card-anchor">
-                  <div className="league-glass-card">
-                    <img src={league.logo} alt={league.name} onError={(e) => e.target.src = "https://placehold.co/80x80?text=League"} />
-                    <span className="league-card-title">{league.name}</span>
-                  </div>
-                </Link>
+            <div className="ads-container" style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap', margin: '20px 0' }}>
+              {ads.map((ad, index) => (
+                <div key={ad.id || index} className="ad-banner" style={{ width: '100%', maxWidth: '800px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                  {/* دعم عرض صورة الإعلان برابط، أو عرض كود إعلاني مثل Google Adsense */}
+                  {ad.image ? (
+                    <a href={ad.link || '#'} target="_blank" rel="noopener noreferrer">
+                      <img src={ad.image} alt={ad.name || 'إعلان'} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                    </a>
+                  ) : ad.code ? (
+                    <div dangerouslySetInnerHTML={{ __html: ad.code }} />
+                  ) : (
+                    <div style={{ padding: '20px', background: '#f5f5f5', textAlign: 'center', color: '#666' }}>
+                      {ad.name || 'مساحة إعلانية'}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </section>
@@ -266,7 +258,7 @@ const Home = () => {
           )}
         </section>
 
-        {/* 🌐 فيديوهات الـ API الخارجي (تم حل المشكلة وتوصيل الـ Embed) */}
+        {/* 🌐 فيديوهات الـ API الخارجي */}
         <section className="section-layout gsap-fade-in">
           <div className="section-title-bar">
             <h2 className="title-text"><MonitorPlay size={26} className="color-accent" /> ملخصات عالمية (مباشر)</h2>
@@ -275,7 +267,6 @@ const Home = () => {
             <>
               <div className="media-bento-grid">
                 {externalVideos.slice(0, visibleExtVideos).map((item, idx) => {
-                  // استخراج الفيديو من مصفوفة ScoreBat كما فعلت في Videos.jsx
                   const mainVideo = item.videos && item.videos.length > 0 ? item.videos[0] : null;
                   if (!mainVideo) return null;
 
@@ -300,7 +291,6 @@ const Home = () => {
               </div>
               {visibleExtVideos < externalVideos.length && (
                 <div className="load-more-center">
-                  {/* 👈 الزيادة هنا بمقدار 6 ليتناسب مع طلبك */}
                   <button className="premium-more-btn" onClick={() => setVisibleExtVideos(prev => prev + 6)}>
                     <span>عرض المزيد من الملخصات</span> <ChevronDown size={18} />
                   </button>
