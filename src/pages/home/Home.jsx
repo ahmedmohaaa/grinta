@@ -17,7 +17,6 @@ const Home = () => {
   // --- حالات تخزين البيانات ---
   const [liveMatches, setLiveMatches] = useState([]);
   const [todayMatches, setTodayMatches] = useState([]);
-  const [pastMatches, setPastMatches] = useState([]); // التعديل: إضافة حالة المباريات السابقة
   const [news, setNews] = useState([]);
   const [localVideos, setLocalVideos] = useState([]);
   const [externalVideos, setExternalVideos] = useState([]);
@@ -26,7 +25,6 @@ const Home = () => {
   // --- التحكم في عرض العناصر ---
   const [visibleLive, setVisibleLive] = useState(4);
   const [visibleToday, setVisibleToday] = useState(4);
-  const [visiblePast, setVisiblePast] = useState(4); // التعديل: التحكم في عرض المباريات السابقة
   const [visibleNews, setVisibleNews] = useState(4);
   const [visibleLocalVideos, setVisibleLocalVideos] = useState(4);
   const [visibleExtVideos, setVisibleExtVideos] = useState(6); 
@@ -53,15 +51,8 @@ const Home = () => {
         // 1. المباريات
         const live = fixturesRes.filter?.(f => ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(f.status_short)) || [];
         const upcoming = fixturesRes.filter?.(f => f.status_short === 'NS' || f.status_short === 'TBD') || [];
-        
-        // التعديل: فلترة المباريات التي انتهت (FT: الوقت الأصلي، AET: الأشواط الإضافية، PEN: ركلات الترجيح)
-        const finished = fixturesRes.filter?.(f => ['FT', 'AET', 'PEN'].includes(f.status_short)) || [];
-        // ترتيب المباريات السابقة من الأحدث للأقدم بناءً على التاريخ
-        const sortedFinished = finished.sort((a, b) => new Date(b.date) - new Date(a.date));
-
         setLiveMatches(live);
         setTodayMatches(upcoming);
-        setPastMatches(sortedFinished); // التعديل: تعيين البيانات المرتبة لـ pastMatches
         
         // 2. ترتيب الأخبار من الأحدث للأقدم
         const sortedNews = Array.isArray(articlesRes) 
@@ -103,8 +94,7 @@ const Home = () => {
       }, mainRef);
       return () => ctx.revert();
     }
-    // التعديل: إضافة visiblePast إلى مصفوفة الاعتمادات لـ GSAP
-  }, [loading, error, visibleLive, visibleToday, visiblePast, visibleNews, visibleLocalVideos, visibleExtVideos]);
+  }, [loading, error, visibleLive, visibleToday, visibleNews, visibleLocalVideos, visibleExtVideos]);
 
   const closeModal = () => setSelectedVideo(null);
 
@@ -168,32 +158,7 @@ const Home = () => {
           )}
         </section>
 
-        {/* 🏁 التعديل: قسم نتائح المباريات السابقة (مباشرة تحت مباريات اليوم) */}
-        <section className="section-layout gsap-fade-in">
-          <div className="section-title-bar">
-            <h2 className="title-text"><Calendar size={26} className="color-primary" /> نتائج المباريات السابقة</h2>
-          </div>
-          {pastMatches.length > 0 ? (
-            <>
-              <div className="matches-responsive-grid">
-                {pastMatches.slice(0, visiblePast).map(match => (
-                  <MatchCardItem key={match.id} match={match} />
-                ))}
-              </div>
-              {visiblePast < pastMatches.length && (
-                <div className="load-more-center">
-                  <button className="premium-more-btn" onClick={() => setVisiblePast(prev => prev + 4)}>
-                    <span>عرض المزيد من المباريات السابقة</span> <ChevronDown size={18} />
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="empty-state-card">لا توجد نتائج مباريات سابقة متاحة.</div>
-          )}
-        </section>
-
-        {/* 📢 قسم الإعلانات */}
+        {/* 📢 قسم الإعلانات النشطة المرجعة من قاعدة البيانات */}
         {ads.length > 0 && (
           <section className="section-layout gsap-fade-in">
             <div className="ads-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', margin: '20px 0' }}>
@@ -334,7 +299,7 @@ const Home = () => {
       </main>
       <Footer />
 
-      {/* ================= Video Modal ================= */}
+      {/* ================= Video Modal (النافذة المنبثقة للعرض السينمائي) ================= */}
       {selectedVideo && (
         <div className="video-modal-overlay" onClick={closeModal}>
           <div className="video-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -357,9 +322,6 @@ const Home = () => {
 
 const MatchCardItem = ({ match }) => {
   const isLive = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(match.status_short);
-  // التعديل: التحقق مما إذا كانت المباراة منتهية لتثبيت إظهار النتيجة بدلاً من VS
-  const isFinished = ['FT', 'AET', 'PEN'].includes(match.status_short);
-
   return (
     <Link to={`/match/${match.fixture_id}`} className="global-card-link-reset">
       <div className={`premium-match-card ${isLive ? 'border-pulse-live' : ''}`}>
@@ -380,8 +342,7 @@ const MatchCardItem = ({ match }) => {
             <span className="team-name-text">{match.home_team_name}</span>
           </div>
           <div className="score-display-center">
-            {/* التعديل: إظهار الأرقام إذا كانت المباراة لايف أو منتهية */}
-            {isLive || isFinished ? (
+            {isLive || match.status_short === 'FT' ? (
               <span className={`score-numbers ${isLive ? 'text-live-red' : ''}`}>{match.home_score} : {match.away_score}</span>
             ) : (
               <span className="vs-badge">VS</span>
