@@ -4,7 +4,11 @@ import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import './Videos.css';
 
-const API_BASE_URL = "https://api.algrinta.com"; // أو الـ IP الخاص بكونتابو
+// السطر القديم:
+// const API_BASE_URL = "https://api.algrinta.com"; 
+
+// السطر الجديد بعد التعديل:
+const API_BASE_URL = "https://api.algrinta.com/api";
 const Videos = () => {
   const [highlightsData, setHighlightsData] = useState([]);
   const [goalsData, setGoalsData] = useState([]); // حالة جديدة للأهداف
