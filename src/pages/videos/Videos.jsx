@@ -1,115 +1,160 @@
 import React, { useState, useEffect } from 'react';
-import { PlayCircle, Calendar, X, Loader2, AlertCircle, Film } from 'lucide-react';
+import { PlayCircle, X, Loader2, AlertCircle, Film, Target } from 'lucide-react';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import './Videos.css';
 
-const API_BASE_URL = 'https://api.algrinta.com/api';
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 const Videos = () => {
-  const [videosData, setVideosData] = useState([]);
+  const [highlightsData, setHighlightsData] = useState([]);
+  const [goalsData, setGoalsData] = useState([]); // حالة جديدة للأهداف
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // حالة التحكم بالـ Modal (النافذة المنبثقة)
   const [selectedVideo, setSelectedVideo] = useState(null);
+  
+  const [activeTab, setActiveTab] = useState('highlights');
 
   useEffect(() => {
-    const fetchHighlights = async () => {
+    const fetchVideos = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const res = await fetch(`${API_BASE_URL}/proxy/highlights/`);
-        const json = await res.json();
-        
-        if (res.ok && json.data) {
-          setVideosData(json.data);
-        } else {
-          throw new Error("لم نتمكن من جلب الفيديوهات.");
+        // جلب الملخصات من Highlightly والأهداف من الداتابيز/يوتيوب في نفس الوقت بالتوازي
+        const [highlightsRes, goalsRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/proxy/highlights/`),
+          fetch(`${API_BASE_URL}/proxy/goals-library/`)
+        ]);
+
+        const highlightsJson = await highlightsRes.json();
+        const goalsJson = await goalsRes.json();
+
+        if (highlightsRes.ok && highlightsJson.data) {
+          setHighlightsData(highlightsJson.data);
+        }
+        if (goalsRes.ok) {
+          setGoalsData(goalsJson); // الكود الخاص بك يرجع المصفوفة مباشرة
         }
       } catch (err) {
         console.error("Error fetching videos:", err);
-        setError("حدث خطأ أثناء تحميل ملخصات المباريات.");
+        setError("حدث خطأ أثناء تحميل الفيديوهات.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchHighlights();
+    fetchVideos();
   }, []);
 
-  // إغلاق المودال وإيقاف الفيديو
   const closeModal = () => setSelectedVideo(null);
 
-  // دالة لتنسيق التاريخ
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  };
-
   return (
-    <div className="premium-sports-layout">
+    <div className="videos-page-wrapper">
       <Navbar />
+      
+      <main className="container mx-auto px-4 py-8">
+        <header className="videos-hero-header">
+          <h1>🎬 مكتبة الفيديوهات</h1>
+          <p>شاهد أحدث أهداف وملخصات مباريات الدوريات الكبرى بجودة عالية</p>
+        </header>
 
-      <main className="videos-page-wrapper">
-        
-        {/* ================= Header ================= */}
-        <section className="videos-hero-header animate-fade-in">
-          <div className="header-content">
-            <h1><Film className="inline-icon text-emerald-500 mr-2" size={38} /> مكتبة الفيديوهات والملخصات</h1>
-            <p>شاهد أحدث أهداف وملخصات مباريات الدوريات الكبرى فور انتهائها.</p>
-          </div>
-        </section>
+ {/* ================= Tabs Section ================= */}
+<div className="tabs-wrapper">
+  <div className="tabs-container">
+    <button 
+      className={`tab-btn ${activeTab === 'highlights' ? 'active' : ''}`}
+      onClick={() => setActiveTab('highlights')}
+    >
+      <Film size={18} />
+      <span>ملخصات المباريات</span>
+    </button>
+    
+    <button 
+      className={`tab-btn ${activeTab === 'goals' ? 'active' : ''}`}
+      onClick={() => setActiveTab('goals')}
+    >
+      <Target size={18} />
+      <span>مكتبة الأهداف</span>
+    </button>
+  </div>
+</div>
 
-        {/* ================= Content ================= */}
         {loading ? (
-          <div className="loader-screen">
-            <Loader2 className="spinner" size={40} />
-            <p>جاري تحميل أحدث الأهداف والملخصات...</p>
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Loader2 className="animate-spin text-emerald-500" size={40} />
+            <p className="text-zinc-400">جاري تحميل الفيديوهات الحصرية...</p>
           </div>
         ) : error ? (
-          <div className="error-screen">
-            <AlertCircle size={50} className="text-red-500 mb-4" />
-            <p>{error}</p>
+          <div className="flex items-center gap-2 bg-red-950/40 border border-red-900 text-red-400 p-4 rounded-xl max-w-md mx-auto">
+            <AlertCircle size={20} />
+            <span>{error}</span>
           </div>
         ) : (
-          <section className="videos-grid-container animate-slide-up">
-            {videosData.map((item, index) => {
-              // ScoreBat يرسل مصفوفة videos، نأخذ أول فيديو (الذي يكون غالباً الملخص الرئيسي)
-              const mainVideo = item.videos && item.videos.length > 0 ? item.videos[0] : null;
-              
-              if (!mainVideo) return null;
-
-              return (
-                <div key={index} className="video-card-premium">
-                  {/* حاوية الصورة المصغرة (Thumbnail) وزر التشغيل */}
-                  <div 
-                    className="video-thumbnail-wrapper"
-                    onClick={() => setSelectedVideo({ title: item.title, embed: mainVideo.embed })}
-                  >
-                    <img src={item.thumbnail} alt={item.title} className="thumbnail-img" />
-                    <div className="play-overlay">
-                      <PlayCircle size={60} className="play-icon" />
+          <>
+            {/* عرض الملخصات */}
+            {activeTab === 'highlights' && (
+              <section className="videos-grid-container">
+                {highlightsData.length === 0 && (
+                  <div className="col-span-full text-center py-10 text-zinc-500">لا توجد ملخصات متاحة حالياً.</div>
+                )}
+                {highlightsData.map((item) => (
+                  <div key={item.id} className="video-card-premium cursor-pointer" onClick={() => setSelectedVideo({
+                      title: item.title,
+                      embedUrl: item.embedUrl || item.url,
+                      description: item.description
+                  })}>
+                    <div className="video-thumbnail-wrapper">
+                      <img src={item.imgUrl} alt={item.title} className="thumbnail-img" />
+                      <div className="play-overlay">
+                        <PlayCircle size={48} className="play-icon" />
+                      </div>
+                      <span className="competition-badge">{item.channel || "فيديو رياضي"}</span>
                     </div>
-                    <span className="competition-badge">{item.competition}</span>
-                  </div>
-
-                  {/* تفاصيل الكارت السفلى */}
-                  <div className="video-card-info">
-                    <h3 className="video-match-title">{item.title}</h3>
-                    <div className="video-meta">
-                      <span className="video-date"><Calendar size={14} className="inline mr-1" /> {formatDate(item.date)}</span>
-                      <span className="video-type">{mainVideo.title}</span>
+                    <div className="video-card-info">
+                      <h3 className="video-match-title">{item.title}</h3>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </section>
+                ))}
+              </section>
+            )}
+
+            {/* عرض الأهداف (بناءً على دالة الـ Youtube التي صممتها) */}
+{/* عرض الأهداف */}
+            {activeTab === 'goals' && (
+              <section className="videos-grid-container">
+                {goalsData.length === 0 && (
+                  <div className="col-span-full text-center py-10 text-zinc-500">لا توجد أهداف متاحة حالياً.</div>
+                )}
+                {goalsData.map((item, idx) => (
+                  <div key={idx} className="video-card-premium cursor-pointer" onClick={() => setSelectedVideo({
+                      title: `أهداف مباراة ${item.home_team} و ${item.away_team}`,
+                      embedUrl: item.embed_url, // 👈 تم التحديث ليأخذ الرابط المباشر من الباك-إند
+                      description: `نتيجة المباراة: ${item.score}`
+                  })}>
+                    <div className="video-thumbnail-wrapper">
+                      {/* 👈 تم التحديث لتأخذ الصورة من الباك-إند مباشرة حسب المنصة */}
+                      <img src={item.thumbnail_url} alt="أهداف المباراة" className="thumbnail-img" />
+                      <div className="play-overlay">
+                        <PlayCircle size={48} className="play-icon" />
+                      </div>
+                      <span className="competition-badge">{item.platform}</span> {/* عرض اسم المنصة */}
+                    </div>
+                    <div className="video-card-info">
+                      <h3 className="video-match-title">{item.home_team} ضد {item.away_team}</h3>
+                      <div className="video-meta mt-2 text-emerald-400 font-bold">
+                        النتيجة: {item.score}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </section>
+            )}
+          </>
         )}
       </main>
 
       <Footer />
 
-      {/* ================= Video Modal (نافذة العرض السينمائية) ================= */}
       {selectedVideo && (
         <div className="video-modal-overlay" onClick={closeModal}>
           <div className="video-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -117,12 +162,17 @@ const Videos = () => {
               <X size={24} />
             </button>
             <h3 className="modal-video-title">{selectedVideo.title}</h3>
-            
-            {/* حقن الـ iframe الخاص بـ ScoreBat بأمان */}
-            <div 
-              className="embed-video-container"
-              dangerouslySetInnerHTML={{ __html: selectedVideo.embed }}
-            />
+            <div className="embed-video-container">
+              <iframe
+                src={selectedVideo.embedUrl}
+                allowFullScreen
+                allow="autoplay; encrypted-media; picture-in-picture"
+                title={selectedVideo.title}
+              ></iframe>
+            </div>
+            {selectedVideo.description && (
+              <p className="p-4 text-sm text-zinc-400">{selectedVideo.description}</p>
+            )}
           </div>
         </div>
       )}
