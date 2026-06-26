@@ -4,8 +4,7 @@ import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import './Videos.css';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+const API_BASE_URL = "https://api.algrinta.com"; // أو الـ IP الخاص بكونتابو
 const Videos = () => {
   const [highlightsData, setHighlightsData] = useState([]);
   const [goalsData, setGoalsData] = useState([]); // حالة جديدة للأهداف
