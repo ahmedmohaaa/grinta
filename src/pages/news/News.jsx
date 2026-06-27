@@ -192,7 +192,6 @@ const News = () => {
                       </div>
                       
                       <h3 className="news-item-title">{article.title}</h3>
-                      <p className="news-item-excerpt">{article.content}</p>
                       
                       <div className="read-more-btn">
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
