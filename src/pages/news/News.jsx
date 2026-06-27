@@ -155,7 +155,6 @@ const News = () => {
                 <div className="featured-overlay">
                   <span className="featured-badge">🔥 أحدث الأخبار</span>
                   <h2 className="featured-title">{featuredArticle.title}</h2>
-                  <p className="featured-excerpt">{featuredArticle.content}</p>
                   
                   <div className="featured-meta">
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
