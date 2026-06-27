@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom'; // إضافة Link للتحكم بالمسارات الداخلية
+import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Search, Calendar, Clock, ArrowLeft } from 'lucide-react';
@@ -17,19 +17,6 @@ const News = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-
-  // استخراج الصورة من كود HTML (للأخبار المحلية من CKEditor)
-  const extractImage = (htmlContent) => {
-    if (!htmlContent) return 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=2000';
-    const match = htmlContent.match(/<img[^>]+src="([^">]+)"/);
-    return match ? match[1] : 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=2070';
-  };
-
-  // معالجة الصور التالفة من الـ API الخارجي ووضع صورة افتراضية
-  const handleImageError = (e) => {
-    e.target.onerror = null; 
-    e.target.src = 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=2070';
-  };
 
   // استخراج نص نقي من HTML لإظهار مقتطف
   const stripHtml = (htmlContent) => {
@@ -51,10 +38,9 @@ const News = () => {
       // معالجة الأخبار المحلية
       const formattedDbArticles = dbData.map(item => ({
         id: `local-${item.id}`,
-        realId: item.id, // نحتفظ بالـ ID الحقيقي لجلبه لاحقاً في صفحة التفاصيل
+        realId: item.id,
         title: item.title,
         content: stripHtml(item.content),
-        image: extractImage(item.content),
         published_at: item.published_at,
         isExternal: false,
         link: `/news/local-${item.id}`
@@ -67,11 +53,10 @@ const News = () => {
           id: uniqueId,
           title: item.title,
           content: item.description || stripHtml(item.content) || "",
-          image: item.urlToImage || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=2000',
           published_at: item.publishedAt,
           isExternal: true,
           link: `/news/${uniqueId}`,
-          originalLink: item.url // نحتفظ بالرابط الأصلي لزر القراءة في صفحة التفاصيل
+          originalLink: item.url
         };
       });
 
@@ -167,12 +152,6 @@ const News = () => {
                 state={{ articleData: featuredArticle }} 
                 className="featured-article news-anim"
               >
-                <img 
-                  src={featuredArticle.image} 
-                  alt={featuredArticle.title} 
-                  className="featured-img" 
-                  onError={handleImageError}
-                />
                 <div className="featured-overlay">
                   <span className="featured-badge">🔥 أحدث الأخبار</span>
                   <h2 className="featured-title">{featuredArticle.title}</h2>
@@ -207,15 +186,6 @@ const News = () => {
                     key={article.id}
                     className="news-item-card news-anim"
                   >
-                    <div className="news-item-img-wrapper">
-                      <img 
-                        src={article.image} 
-                        alt={article.title} 
-                        className="news-item-img" 
-                        onError={handleImageError}
-                      />
-                    </div>
-                    
                     <div className="news-item-content">
                       <div className="news-item-date">
                         <Calendar size={14} />
