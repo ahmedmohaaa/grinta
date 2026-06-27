@@ -47,43 +47,32 @@ const Home = () => {
   const [selectedVideo, setSelectedVideo] = useState(null);
 
   useEffect(() => {
-    const fetchHomeData = async () => {
-      try {
-        setLoading(true);
-        
-        const [fixturesRes, articlesRes, videosRes, adsRes, extVideosRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/fixtures/`).then(res => res.json()).catch(() => []),
-          fetch(`${API_BASE_URL}/articles/`).then(res => res.json()).catch(() => []),
-          fetch(`${API_BASE_URL}/videos/`).then(res => res.json()).catch(() => []),
-          fetch(`${API_BASE_URL}/ads/?page=home`).then(res => res.json()).catch(() => []),
-          fetch(`${API_BASE_URL}/proxy/highlights/`).then(res => res.json()).catch(() => null)
-        ]);
+    // إيقاف شاشة التحميل فوراً لعرض هيكل الموقع الأساسي (لتحسين سرعة الفتح)
+    setLoading(false);
 
-        // --- الفلترة الذكية للمباريات لحل مشكلة التضارب ---
-        
-        // 1. المباريات المباشرة: نضمن أنها لايف، ولا تحتوي على كلمات انتهاء، ولم يمر عليها وقت طويل
+    // 1. جلب المباريات وفلترتها
+    const fetchFixtures = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/fixtures/`);
+        const fixturesRes = await res.json();
+
         const live = fixturesRes.filter?.(f => {
             const isLiveStatus = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(f.status_short);
             const isFinishedStr = f.status_long?.toLowerCase().includes('انتهت') || f.status_long?.toLowerCase().includes('finished');
             return isLiveStatus && f.status_short !== 'FT' && !isFinishedStr && !isOverdue(f.date);
         }) || [];
 
-        // 2. المباريات السابقة (المنتهية + المباريات العالقة التي مر عليها وقت طويل)
         const finished = fixturesRes.filter?.(f => {
             const isFinishedStatus = ['FT', 'AET', 'PEN'].includes(f.status_short);
             const isFinishedStr = f.status_long?.toLowerCase().includes('انتهت') || f.status_long?.toLowerCase().includes('finished');
             return isFinishedStatus || isFinishedStr || isOverdue(f.date);
         }) || [];
         
-        // ترتيب المباريات السابقة من الأحدث إلى الأقدم
         const sortedFinished = finished.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        // 3. المباريات القادمة (مباريات اليوم التي لم تبدأ)
         const upcoming = fixturesRes.filter?.(f => {
             const isUpcomingStatus = ['NS', 'TBD'].includes(f.status_short);
-            // التأكد من أنها ليست في المباشر ولا في المنتهي
             const notLiveOrFinished = !live.some(lm => lm.fixture_id === f.fixture_id) && !finished.some(fm => fm.fixture_id === f.fixture_id);
-            // التأكد من أن وقتها لم يأتِ بعد (لتجنب إظهار مباريات منسية قديمة)
             const isFuture = new Date(f.date).getTime() > new Date().getTime() - (60 * 60 * 1000);
             return isUpcomingStatus && notLiveOrFinished && isFuture;
         }) || [];
@@ -91,33 +80,69 @@ const Home = () => {
         setLiveMatches(live);
         setPastMatches(sortedFinished);
         setTodayMatches(upcoming);
-        
-        // 4. ترتيب الأخبار من الأحدث للأقدم
+      } catch (err) {
+        console.error("Error loading fixtures:", err);
+      }
+    };
+
+    // 2. جلب الأخبار
+    const fetchNews = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/articles/`);
+        const articlesRes = await res.json();
         const sortedNews = Array.isArray(articlesRes) 
           ? articlesRes.sort((a, b) => new Date(b.created_at || b.published_at) - new Date(a.created_at || a.published_at))
           : [];
         setNews(sortedNews);
+      } catch (err) {
+        console.error("Error loading news:", err);
+      }
+    };
 
-        // 5. الفيديوهات والإعلانات
+    // 3. جلب فيديوهات المنصة
+    const fetchLocalVideos = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/videos/`);
+        const videosRes = await res.json();
         setLocalVideos(Array.isArray(videosRes) ? videosRes : []);
-        setAds(Array.isArray(adsRes) ? adsRes : []);
+      } catch (err) {
+        console.error("Error loading local videos:", err);
+      }
+    };
 
-        // 6. الفيديوهات الخارجية 
+    // 4. جلب الإعلانات
+    const fetchAds = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/ads/?page=home`);
+        const adsRes = await res.json();
+        setAds(Array.isArray(adsRes) ? adsRes : []);
+      } catch (err) {
+        console.error("Error loading ads:", err);
+      }
+    };
+
+    // 5. جلب الملخصات العالمية
+    const fetchExternalVideos = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/proxy/highlights/`);
+        const extVideosRes = await res.json();
         if (extVideosRes && extVideosRes.data) {
           setExternalVideos(extVideosRes.data);
         } else if (Array.isArray(extVideosRes)) {
           setExternalVideos(extVideosRes);
         }
-
-        setLoading(false);
       } catch (err) {
-        console.error("Error loading infrastructure data:", err);
-        setError("تعذر الاتصال بخوادم جرينتا الرياضية. يرجى مراجعة إعدادات السيرفر.");
-        setLoading(false);
+        console.error("Error loading external highlights:", err);
       }
     };
 
-    fetchHomeData();
+    // استدعاء جميع الدوال لتعمل بشكل متوازٍ ومستقل
+    fetchFixtures();
+    fetchNews();
+    fetchLocalVideos();
+    fetchAds();
+    fetchExternalVideos();
+
   }, []);
 
   useEffect(() => {
