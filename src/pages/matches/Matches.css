@@ -199,12 +199,12 @@
   background: rgba(24, 24, 27, 0.4);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 1.5rem;
+  border-radius: 12px; /* تقليل الانحناء قليلاً */
+  padding: 1rem; /* تقليل الحواف الداخلية من 1.5 إلى 1 */
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem; /* تقليل المسافة بين الفرق والنتيجة من 2 إلى 1 */
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -244,15 +244,15 @@
 .team-side.away { justify-content: flex-start; text-align: right; }
 
 .team-logo-lg {
-  width: 60px;
-  height: 60px;
+  width: 45px; /* تصغير اللوجو من 60px */
+  height: 45px;
   object-fit: contain;
   filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
 }
 
 .team-name-lg {
-  font-size: 1.25rem;
-  font-weight: 800;
+  font-size: 1.05rem; /* تصغير الخط */
+  font-weight: 700;
 }
 
 /* المنتصف (النتيجة أو التوقيت) */
@@ -266,12 +266,12 @@
 }
 
 .score-display {
-  font-size: 2.5rem;
+  font-size: 2rem; /* تصغير الخط من 2.5 */
   font-weight: 900;
-  letter-spacing: 5px;
+  letter-spacing: 3px; /* تقليل المسافة بين الأرقام */
   color: #fff;
   text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-  direction: ltr; /* لضمان ظهور النتيجة بشكل صحيح 2 - 1 */
+  direction: ltr;
 }
 
 .live-score {
@@ -280,7 +280,7 @@
 }
 
 .match-time-lg {
-  font-size: 1.5rem;
+  font-size: 1.25rem; /* تصغير الوقت */
   font-weight: 800;
   color: #10b981;
 }
@@ -317,20 +317,20 @@
 .match-actions {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  grid-column: 1 / -1; /* يمتد عبر كل الأعمدة */
+  gap: 0.8rem; /* تقليل المسافة بين الأزرار */
+  margin-top: 0.8rem;
+  grid-column: 1 / -1;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding-top: 1rem;
+  padding-top: 0.8rem;
 }
 
 .action-btn {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #fff;
-  padding: 0.5rem 1.5rem;
+  padding: 0.4rem 1rem; /* تصغير حجم الزر نفسه */
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 0.8rem; /* تصغير خط الزر */
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -346,58 +346,72 @@
 /* Responsive */
 /* Responsive - الكود المحدث */
 @media (max-width: 768px) {
-  /* تقليل المسافات الجانبية للصفحة على الموبايل لإعطاء مساحة أكبر للعناصر */
   .matches-wrapper {
-    padding: 0 1rem; 
+    padding: 0 0.8rem; 
   }
 
-  /* تحويل كارت المباراة لعمود واحد مع تقليل الحواف الداخلية */
   .match-card-adv {
     grid-template-columns: 1fr;
     text-align: center;
-    gap: 1.2rem;
-    padding: 1.2rem; 
+    gap: 0.8rem; /* تقليل المسافات العمودية بشكل كبير */
+    padding: 0.8rem; /* حواف داخلية صغيرة جداً للموبايل */
   }
 
   .team-side {
-    flex-direction: column;
+    flex-direction: row; /* 🔥 وضع الشعار والاسم بجانب بعضهما بدلاً من فوق بعض لتوفير المساحة */
     justify-content: center;
-    text-align: center;
     gap: 0.5rem;
   }
 
-  .team-side.home, .team-side.away {
-    justify-content: center;
+  .team-logo-lg {
+    width: 35px; /* لوجو صغير جداً للموبايل */
+    height: 35px;
   }
 
-  /* تصغير حجم النتيجة قليلاً على الموبايل حتى لا تنكسر الشاشة */
+  .team-name-lg {
+    font-size: 0.95rem; /* خط أصغر للموبايل */
+  }
+
   .score-display {
-    font-size: 2rem;
-    letter-spacing: 3px;
+    font-size: 1.6rem; /* نتيجة بحجم مناسب للموبايل */
+    letter-spacing: 2px;
   }
 
-  /* جعل الفلاتر تأخذ العرض بالكامل بشكل مرتب */
+  .match-time-lg {
+    font-size: 1.1rem;
+  }
+
+  .match-actions {
+    flex-wrap: wrap; /* للسماح للأزرار بالنزول لسطر جديد إذا كانت كثيرة */
+    gap: 0.5rem;
+  }
+
+  .action-btn {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.75rem;
+    flex: 1; /* جعل الأزرار تتمدد لتملأ الفراغ بشكل متناسق */
+    text-align: center;
+    min-width: 120px; /* لضمان عدم صغر الزر بشكل مبالغ فيه */
+  }
+
+  /* فلاتر الموبايل كما هي */
   .filters-row {
     flex-direction: column;
     align-items: stretch;
   }
-
   .filter-select {
-    width: 100%; /* إجبار السيلكت على أخذ العرض المتاح فقط */
+    width: 100%; 
   }
-
-  /* جعل أزرار الحالة تتمدد بشكل متساوٍ على الموبايل */
   .status-pills {
     justify-content: center;
     width: 100%;
     box-sizing: border-box;
   }
-
   .status-pill {
-    flex: 1; /* لجعل الأزرار بنفس الحجم */
+    flex: 1; 
     text-align: center;
     padding: 0.5rem 0.5rem;
     font-size: 0.8rem;
-    white-space: nowrap; /* لمنع انكسار النص داخل الزر */
+    white-space: nowrap; 
   }
 }
