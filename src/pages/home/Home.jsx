@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { PlayCircle, Flame, AlertCircle, ChevronDown, Trophy, Newspaper, MonitorPlay, Calendar, X, CheckCircle } from 'lucide-react';
+import { PlayCircle, Flame, AlertCircle, ChevronDown, Trophy, Newspaper, MonitorPlay, Calendar, X, CheckCircle, Target } from 'lucide-react';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import './Home.css';
 import { Link } from "react-router-dom";
+import { Helmet } from 'react-helmet'; // إضافة أساسية لسيو احترافي
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -30,6 +31,7 @@ const Home = () => {
   const [news, setNews] = useState([]);
   const [localVideos, setLocalVideos] = useState([]);
   const [externalVideos, setExternalVideos] = useState([]);
+  const [goalsData, setGoalsData] = useState([]); // حالة الأهداف الجديدة
   const [ads, setAds] = useState([]);
 
   // --- التحكم في عرض العناصر ---
@@ -39,6 +41,7 @@ const Home = () => {
   const [visibleNews, setVisibleNews] = useState(4);
   const [visibleLocalVideos, setVisibleLocalVideos] = useState(4);
   const [visibleExtVideos, setVisibleExtVideos] = useState(6); 
+  const [visibleGoals, setVisibleGoals] = useState(4); // تحكم الأهداف
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,102 +50,84 @@ const Home = () => {
   const [selectedVideo, setSelectedVideo] = useState(null);
 
   useEffect(() => {
-    // إيقاف شاشة التحميل فوراً لعرض هيكل الموقع الأساسي (لتحسين سرعة الفتح)
     setLoading(false);
 
-    // 1. جلب المباريات وفلترتها
-    const fetchFixtures = async () => {
+    const fetchAllData = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/fixtures/`);
-        const fixturesRes = await res.json();
+        // الاستفادة من Promise.allSettled لضمان عدم تعطل باقي الـ APIs إذا فشل أحدهم
+        const results = await Promise.allSettled([
+          fetch(`${API_BASE_URL}/fixtures/`),
+          fetch(`${API_BASE_URL}/articles/`),
+          fetch(`${API_BASE_URL}/videos/`),
+          fetch(`${API_BASE_URL}/ads/?page=home`),
+          fetch(`${API_BASE_URL}/proxy/highlights/`),
+          fetch(`${API_BASE_URL}/proxy/goals-library/`) // 👈 جلب الأهداف
+        ]);
 
-        const live = fixturesRes.filter?.(f => {
-            const isLiveStatus = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(f.status_short);
-            const isFinishedStr = f.status_long?.toLowerCase().includes('انتهت') || f.status_long?.toLowerCase().includes('finished');
-            return isLiveStatus && f.status_short !== 'FT' && !isFinishedStr && !isOverdue(f.date);
-        }) || [];
+        // 1. Fixtures
+        if (results[0].status === 'fulfilled') {
+          const fixturesRes = await results[0].value.json();
+          const live = fixturesRes.filter?.(f => {
+              const isLiveStatus = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(f.status_short);
+              const isFinishedStr = f.status_long?.toLowerCase().includes('انتهت') || f.status_long?.toLowerCase().includes('finished');
+              return isLiveStatus && f.status_short !== 'FT' && !isFinishedStr && !isOverdue(f.date);
+          }) || [];
 
-        const finished = fixturesRes.filter?.(f => {
-            const isFinishedStatus = ['FT', 'AET', 'PEN'].includes(f.status_short);
-            const isFinishedStr = f.status_long?.toLowerCase().includes('انتهت') || f.status_long?.toLowerCase().includes('finished');
-            return isFinishedStatus || isFinishedStr || isOverdue(f.date);
-        }) || [];
-        
-        const sortedFinished = finished.sort((a, b) => new Date(b.date) - new Date(a.date));
+          const finished = fixturesRes.filter?.(f => {
+              const isFinishedStatus = ['FT', 'AET', 'PEN'].includes(f.status_short);
+              const isFinishedStr = f.status_long?.toLowerCase().includes('انتهت') || f.status_long?.toLowerCase().includes('finished');
+              return isFinishedStatus || isFinishedStr || isOverdue(f.date);
+          }) || [];
+          const sortedFinished = finished.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        const upcoming = fixturesRes.filter?.(f => {
-            const isUpcomingStatus = ['NS', 'TBD'].includes(f.status_short);
-            const notLiveOrFinished = !live.some(lm => lm.fixture_id === f.fixture_id) && !finished.some(fm => fm.fixture_id === f.fixture_id);
-            const isFuture = new Date(f.date).getTime() > new Date().getTime() - (60 * 60 * 1000);
-            return isUpcomingStatus && notLiveOrFinished && isFuture;
-        }) || [];
+          const upcoming = fixturesRes.filter?.(f => {
+              const isUpcomingStatus = ['NS', 'TBD'].includes(f.status_short);
+              const notLiveOrFinished = !live.some(lm => lm.fixture_id === f.fixture_id) && !finished.some(fm => fm.fixture_id === f.fixture_id);
+              const isFuture = new Date(f.date).getTime() > new Date().getTime() - (60 * 60 * 1000);
+              return isUpcomingStatus && notLiveOrFinished && isFuture;
+          }) || [];
 
-        setLiveMatches(live);
-        setPastMatches(sortedFinished);
-        setTodayMatches(upcoming);
-      } catch (err) {
-        console.error("Error loading fixtures:", err);
-      }
-    };
-
-    // 2. جلب الأخبار
-    const fetchNews = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/articles/`);
-        const articlesRes = await res.json();
-        const sortedNews = Array.isArray(articlesRes) 
-          ? articlesRes.sort((a, b) => new Date(b.created_at || b.published_at) - new Date(a.created_at || a.published_at))
-          : [];
-        setNews(sortedNews);
-      } catch (err) {
-        console.error("Error loading news:", err);
-      }
-    };
-
-    // 3. جلب فيديوهات المنصة
-    const fetchLocalVideos = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/videos/`);
-        const videosRes = await res.json();
-        setLocalVideos(Array.isArray(videosRes) ? videosRes : []);
-      } catch (err) {
-        console.error("Error loading local videos:", err);
-      }
-    };
-
-    // 4. جلب الإعلانات
-    const fetchAds = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/ads/?page=home`);
-        const adsRes = await res.json();
-        setAds(Array.isArray(adsRes) ? adsRes : []);
-      } catch (err) {
-        console.error("Error loading ads:", err);
-      }
-    };
-
-    // 5. جلب الملخصات العالمية
-    const fetchExternalVideos = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/proxy/highlights/`);
-        const extVideosRes = await res.json();
-        if (extVideosRes && extVideosRes.data) {
-          setExternalVideos(extVideosRes.data);
-        } else if (Array.isArray(extVideosRes)) {
-          setExternalVideos(extVideosRes);
+          setLiveMatches(live);
+          setPastMatches(sortedFinished);
+          setTodayMatches(upcoming);
         }
+
+        // 2. News
+        if (results[1].status === 'fulfilled') {
+          const articlesRes = await results[1].value.json();
+          setNews(Array.isArray(articlesRes) ? articlesRes.sort((a, b) => new Date(b.created_at || b.published_at) - new Date(a.created_at || a.published_at)) : []);
+        }
+
+        // 3. Local Videos
+        if (results[2].status === 'fulfilled') {
+          const videosRes = await results[2].value.json();
+          setLocalVideos(Array.isArray(videosRes) ? videosRes : []);
+        }
+
+        // 4. Ads
+        if (results[3].status === 'fulfilled') {
+          const adsRes = await results[3].value.json();
+          setAds(Array.isArray(adsRes) ? adsRes : []);
+        }
+
+        // 5. External Highlights
+        if (results[4].status === 'fulfilled') {
+          const extVideosRes = await results[4].value.json();
+          setExternalVideos(extVideosRes?.data || (Array.isArray(extVideosRes) ? extVideosRes : []));
+        }
+
+        // 6. Goals Library 👈
+        if (results[5].status === 'fulfilled') {
+          const goalsRes = await results[5].value.json();
+          setGoalsData(Array.isArray(goalsRes) ? goalsRes : []);
+        }
+
       } catch (err) {
-        console.error("Error loading external highlights:", err);
+        console.error("Error in fetching data:", err);
       }
     };
 
-    // استدعاء جميع الدوال لتعمل بشكل متوازٍ ومستقل
-    fetchFixtures();
-    fetchNews();
-    fetchLocalVideos();
-    fetchAds();
-    fetchExternalVideos();
-
+    fetchAllData();
   }, []);
 
   useEffect(() => {
@@ -157,29 +142,73 @@ const Home = () => {
       }, mainRef);
       return () => ctx.revert();
     }
-  }, [loading, error, visibleLive, visibleToday, visiblePast, visibleNews, visibleLocalVideos, visibleExtVideos]);
+  }, [loading, error, visibleLive, visibleToday, visiblePast, visibleNews, visibleLocalVideos, visibleExtVideos, visibleGoals]);
 
   const closeModal = () => setSelectedVideo(null);
+
+  const activeAds = ads.filter(ad => ad.status === 'active');
 
   if (loading) return <div className="grinta-loading-wrapper" dir="rtl"><div className="grinta-spinner"></div><p>جاري مزامنة البيانات المباشرة...</p></div>;
   if (error) return <div className="grinta-error-wrapper" dir="rtl"><AlertCircle size={50} className="error-pulse" /><p>{error}</p></div>;
 
   return (
     <div className="home-container" dir="rtl">
+      
+      {/* 🚀 SEO Optimization - Schema & Meta Tags */}
+      <Helmet>
+        <title>الجرينتا | مباريات اليوم، أهداف وملخصات حصرية</title>
+        <meta name="description" content="منصة الجرينتا الرياضية - تابع نتائج المباريات بث مباشر، شاهد أحدث الأهداف، الملخصات العالمية، وأخبار كرة القدم الموثوقة لحظة بلحظة." />
+        <meta name="keywords" content="مباريات اليوم, اهداف المباريات, ملخصات كرة قدم, بث مباشر, الجرينتا, دوري ابطال اوروبا, اخبار الرياضة, Algrinta" />
+        <meta property="og:title" content="الجرينتا | بوابتك لعالم كرة القدم" />
+        <meta property="og:description" content="تابع نتائج المباريات بث مباشر، أحدث الأهداف والملخصات العالمية لحظة بلحظة." />
+        <meta property="og:type" content="website" />
+        {/* سكربت JSON-LD لتفهم عناكب جوجل طبيعة الموقع كمنصة رياضية إخبارية */}
+        <script type="application/ld+json">
+          {`
+            {
+              "@context": "https://schema.org",
+              "@type": "SportsOrganization",
+              "name": "Algrinta - الجرينتا",
+              "url": "https://algrinta.com",
+              "description": "منصة الجرينتا الرياضية لنتائج المباريات والأهداف والملخصات.",
+              "sameAs": [
+                "https://www.facebook.com/algrinta",
+                "https://twitter.com/algrinta"
+              ]
+            }
+          `}
+        </script>
+      </Helmet>
+
       <Navbar />
 
       <main ref={mainRef}>
         {/* البانر الرئيسي */}
-        <section className="hero-banner-section">
+        <header className="hero-banner-section" aria-label="البانر الرئيسي للموقع">
           <div className="hero-banner-image"></div>
           <div className="hero-banner-overlay"></div>
-        </section>
+        </header>
+
+        {/* 📢 قسم الإعلان العلوي (تحت البانر مباشرة) */}
+        {activeAds.length > 0 && (
+          <section className="top-ad-wrapper gsap-fade-in" style={{ display: 'flex', justifyContent: 'center', padding: '1.5rem 1rem', background: 'var(--grinta-dark-bg)' }}>
+            <div className="ad-banner" style={{ width: '100%', maxWidth: '900px', borderRadius: '12px', overflow: 'hidden' }}>
+              {activeAds[0].code ? (
+                <div dangerouslySetInnerHTML={{ __html: activeAds[0].code }} />
+              ) : (
+                <div style={{ padding: '20px', background: '#1e293b', textAlign: 'center', color: '#94a3b8' }}>
+                  {activeAds[0].name} - مساحة إعلانية
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* ⚽ المباريات المباشرة */}
         {liveMatches.length > 0 && (
           <section className="section-layout gsap-fade-in">
             <div className="section-title-bar">
-              <h2 className="title-text"><Flame size={26} className="fire-glow-icon" /> المباريات الجارية الآن</h2>
+              <h1 className="title-text"><Flame size={26} className="fire-glow-icon" /> المباريات الجارية الآن</h1>
             </div>
             <div className="matches-responsive-grid">
               {liveMatches.slice(0, visibleLive).map(match => (
@@ -188,7 +217,7 @@ const Home = () => {
             </div>
             {visibleLive < liveMatches.length && (
               <div className="load-more-center">
-                <button className="premium-more-btn" onClick={() => setVisibleLive(prev => prev + 4)}>
+                <button className="premium-more-btn" onClick={() => setVisibleLive(prev => prev + 4)} aria-label="عرض المزيد من المباريات المباشرة">
                   <span>عرض المزيد من المباريات</span> <ChevronDown size={18} />
                 </button>
               </div>
@@ -221,6 +250,48 @@ const Home = () => {
           )}
         </section>
 
+        {/* 🎯 مكتبة الأهداف الحصرية (تمت الإضافة هنا) */}
+        <section className="section-layout gsap-fade-in">
+          <div className="section-title-bar">
+            <h2 className="title-text"><Target size={26} className="color-primary mr-2" /> أحدث الأهداف</h2>
+          </div>
+          {goalsData.length > 0 ? (
+            <>
+              <div className="media-bento-grid">
+                {goalsData.slice(0, visibleGoals).map((item, idx) => (
+                  <div 
+                    key={idx} 
+                    className="premium-media-card is-video-card" 
+                    onClick={() => setSelectedVideo({ 
+                      title: `أهداف مباراة ${item.home_team} و ${item.away_team}`, 
+                      embed: `<iframe src="${item.embed_url}" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" style="width:100%; height:500px; border:none; border-radius:12px;"></iframe>`
+                    })}
+                    style={{ cursor: 'pointer', backgroundImage: `url(${item.thumbnail_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                  >
+                    <div className="video-dark-overlay">
+                      <PlayCircle size={55} className="play-icon-glow" />
+                    </div>
+                    <div className="media-card-gradient">
+                      <span className="media-badge badge-external">{item.platform}</span>
+                      <h3 className="media-card-title">{item.home_team} ضد {item.away_team}</h3>
+                      <p className="text-emerald-400 font-bold mt-1 text-sm">النتيجة: {item.score}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {visibleGoals < goalsData.length && (
+                <div className="load-more-center">
+                  <button className="premium-more-btn" onClick={() => setVisibleGoals(prev => prev + 4)}>
+                    <span>عرض المزيد من الأهداف</span> <ChevronDown size={18} />
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="empty-state-card">جاري تحديث مكتبة الأهداف...</div>
+          )}
+        </section>
+
         {/* 🏁 نتائج المباريات السابقة */}
         <section className="section-layout gsap-fade-in">
           <div className="section-title-bar">
@@ -246,25 +317,6 @@ const Home = () => {
           )}
         </section>
 
-        {/* 📢 قسم الإعلانات */}
-        {ads.length > 0 && (
-          <section className="section-layout gsap-fade-in">
-            <div className="ads-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', margin: '20px 0' }}>
-              {ads.filter(ad => ad.status === 'active').map((ad, index) => (
-                <div key={ad.id || index} className="ad-banner" style={{ width: '100%', maxWidth: '800px', borderRadius: '8px', overflow: 'hidden', display: 'flex', justifyContent: 'center' }}>
-                  {ad.code ? (
-                    <div style={{ width: '100%' }} dangerouslySetInnerHTML={{ __html: ad.code }} />
-                  ) : (
-                    <div style={{ padding: '15px', background: '#1e293b', borderRadius: '8px', textAlign: 'center', color: '#94a3b8', width: '100%' }}>
-                      {ad.name}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
         {/* 📰 الأخبار */}
         <section className="section-layout gsap-fade-in">
           <div className="section-title-bar">
@@ -275,15 +327,15 @@ const Home = () => {
               <div className="media-bento-grid">
                 {news.slice(0, visibleNews).map(article => (
                   <Link key={article.id} to={`/news/${article.id}`} className="global-card-link-reset" style={{ display: 'block' }}>
-                    <div className="premium-media-card text-only-card">
+                    <article className="premium-media-card text-only-card">
                       <div className="text-card-content">
                         <span className="media-badge">أخبار عاجلة</span>
                         <h3 className="media-card-title text-only-title">{article.title}</h3>
-                        <p className="news-date-text">
+                        <time className="news-date-text" dateTime={article.created_at || article.published_at}>
                           {new Date(article.created_at || article.published_at || Date.now()).toLocaleDateString('ar-EG')}
-                        </p>
+                        </time>
                       </div>
-                    </div>
+                    </article>
                   </Link>
                 ))}
               </div>
@@ -313,15 +365,15 @@ const Home = () => {
                     <div 
                       key={index} 
                       className="premium-media-card is-video-card" 
-                      onClick={() => setSelectedVideo({ title: vid.title, embed: `<video src="${vid.video_url}" controls autoplay style="width:100%; border-radius:8px;"></video>` })}
+                      onClick={() => setSelectedVideo({ title: vid.title, embed: `<video src="${vid.video_url}" controls autoplay style="width:100%; border-radius:8px; outline: none;"></video>` })}
                       style={{ cursor: 'pointer', backgroundImage: `url(${vid.thumbnail || 'https://placehold.co/600x400?text=Video'})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
                     >
                       <div className="video-dark-overlay">
                         <PlayCircle size={45} className="play-icon-glow" />
                       </div>
-                      <div className="text-card-content justify-end">
+                      <div className="media-card-gradient text-card-content justify-end" style={{background: 'linear-gradient(to top, rgba(0,0,0,0.95) 10%, transparent 100%)', height: '100%'}}>
                         <span className="media-badge badge-local">{vid.competition || 'فيديو حصري'}</span>
-                        <h3 className="media-card-title text-only-title text-white">{vid.title}</h3>
+                        <h3 className="media-card-title text-white">{vid.title}</h3>
                       </div>
                     </div>
                   );
@@ -340,7 +392,7 @@ const Home = () => {
           )}
         </section>
 
-        {/* 🌐 فيديوهات الـ API الخارجي */}
+        {/* 🌐 ملخصات عالمية */}
         <section className="section-layout gsap-fade-in">
           <div className="section-title-bar">
             <h2 className="title-text"><MonitorPlay size={26} className="color-accent" /> ملخصات عالمية (مباشر)</h2>
@@ -359,7 +411,7 @@ const Home = () => {
                       onClick={() => setSelectedVideo({ title: item.title, embed: mainVideo.embed })}
                       style={{ cursor: 'pointer' }}
                     >
-                      <img src={item.thumbnail} alt={item.title} className="media-card-img" />
+                      <img src={item.thumbnail} alt={item.title} className="media-card-img" loading="lazy" />
                       <div className="video-dark-overlay">
                         <PlayCircle size={55} className="play-icon-glow" />
                       </div>
@@ -380,21 +432,41 @@ const Home = () => {
               )}
             </>
           ) : (
-            <div className="empty-state-card">لا توجد ملخصات عالمية متاحة الآن. تأكد من مزامنة الـ API الخارجي.</div>
+            <div className="empty-state-card">لا توجد ملخصات عالمية متاحة الآن.</div>
           )}
         </section>
+
+        {/* 📢 قسم الإعلانات السفلي (نهاية الصفحة) */}
+        {activeAds.length > 0 && (
+          <section className="section-layout gsap-fade-in">
+            <div className="ads-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', margin: '20px 0' }}>
+              {/* عرض جميع الإعلانات في الأسفل (أو ممكن تجاوز الأول إذا أردت استخدام .slice(1) ) */}
+              {activeAds.map((ad, index) => (
+                <div key={ad.id || index} className="ad-banner" style={{ width: '100%', maxWidth: '900px', borderRadius: '12px', overflow: 'hidden', display: 'flex', justifyContent: 'center' }}>
+                  {ad.code ? (
+                    <div style={{ width: '100%' }} dangerouslySetInnerHTML={{ __html: ad.code }} />
+                  ) : (
+                    <div style={{ padding: '15px', background: '#1e293b', borderRadius: '8px', textAlign: 'center', color: '#94a3b8', width: '100%' }}>
+                      {ad.name}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
       </main>
       <Footer />
 
       {/* ================= Video Modal ================= */}
       {selectedVideo && (
-        <div className="video-modal-overlay" onClick={closeModal}>
+        <div className="video-modal-overlay" onClick={closeModal} role="dialog" aria-modal="true" aria-labelledby="modal-title">
           <div className="video-modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal-btn" onClick={closeModal}>
+            <button className="close-modal-btn" onClick={closeModal} aria-label="إغلاق الفيديو">
               <X size={28} />
             </button>
-            <h3 className="modal-video-title">{selectedVideo.title}</h3>
+            <h3 id="modal-title" className="modal-video-title">{selectedVideo.title}</h3>
             
             <div 
               className="embed-video-container"
@@ -410,12 +482,11 @@ const Home = () => {
 
 const MatchCardItem = ({ match, isPast = false }) => {
   const isLive = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(match.status_short);
-  // نظهر النتيجة إذا كانت المباراة لايف، أو إذا كانت في قسم "السابقة" (isPast)، أو إذا كان الـ status_short يدل على الانتهاء
   const showScore = isLive || isPast || ['FT', 'AET', 'PEN'].includes(match.status_short);
 
   return (
-    <Link to={`/match/${match.fixture_id}`} className="global-card-link-reset">
-      <div className={`premium-match-card ${isLive ? 'border-pulse-live' : ''}`}>
+    <Link to={`/match/${match.fixture_id}`} className="global-card-link-reset" title={`مباراة ${match.home_team_name} ضد ${match.away_team_name}`}>
+      <article className={`premium-match-card ${isLive ? 'border-pulse-live' : ''}`}>
         <div className="match-card-meta">
           <span className="league-badge-text">{match.league?.name || 'بطولة كروية'}</span>
           {isLive ? (
@@ -429,7 +500,7 @@ const MatchCardItem = ({ match, isPast = false }) => {
         </div>
         <div className="match-card-teams-area">
           <div className="team-meta-block align-left">
-            <img src={match.home_team_logo} alt={match.home_team_name} onError={(e) => e.target.src='https://placehold.co/45x45?text=Team'} />
+            <img src={match.home_team_logo} alt={`شعار ${match.home_team_name}`} loading="lazy" onError={(e) => e.target.src='https://placehold.co/45x45?text=Team'} />
             <span className="team-name-text">{match.home_team_name}</span>
           </div>
           <div className="score-display-center">
@@ -440,12 +511,12 @@ const MatchCardItem = ({ match, isPast = false }) => {
             )}
           </div>
           <div className="team-meta-block align-right">
-            <img src={match.away_team_logo} alt={match.away_team_name} onError={(e) => e.target.src='https://placehold.co/45x45?text=Team'} />
+            <img src={match.away_team_logo} alt={`شعار ${match.away_team_name}`} loading="lazy" onError={(e) => e.target.src='https://placehold.co/45x45?text=Team'} />
             <span className="team-name-text">{match.away_team_name}</span>
           </div>
         </div>
         <div className="match-card-footer-info">{match.status_long}</div>
-      </div>
+      </article>
     </Link>
   );
 };
