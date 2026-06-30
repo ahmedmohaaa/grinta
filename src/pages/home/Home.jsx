@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { PlayCircle, Flame, AlertCircle, ChevronDown, Trophy, Newspaper, MonitorPlay, Calendar, X, CheckCircle, Target } from 'lucide-react';
+import { PlayCircle, Flame, AlertCircle, ChevronDown, Newspaper, MonitorPlay, Calendar, X, CheckCircle, Target } from 'lucide-react';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import './Home.css';
 import { Link } from "react-router-dom";
-import { Helmet } from 'react-helmet'; // إضافة أساسية لسيو احترافي
+import { Helmet } from 'react-helmet';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -31,7 +31,7 @@ const Home = () => {
   const [news, setNews] = useState([]);
   const [localVideos, setLocalVideos] = useState([]);
   const [externalVideos, setExternalVideos] = useState([]);
-  const [goalsData, setGoalsData] = useState([]); // حالة الأهداف الجديدة
+  const [goalsData, setGoalsData] = useState([]); 
   const [ads, setAds] = useState([]);
 
   // --- التحكم في عرض العناصر ---
@@ -41,143 +41,127 @@ const Home = () => {
   const [visibleNews, setVisibleNews] = useState(4);
   const [visibleLocalVideos, setVisibleLocalVideos] = useState(4);
   const [visibleExtVideos, setVisibleExtVideos] = useState(6); 
-  const [visibleGoals, setVisibleGoals] = useState(4); // تحكم الأهداف
+  const [visibleGoals, setVisibleGoals] = useState(4);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  // --- حالة التحكم بالنافذة المنبثقة للفيديو ---
+  // حالة النافذة المنبثقة للفيديو
   const [selectedVideo, setSelectedVideo] = useState(null);
 
+  // =====================================================================
+  // 🚀 استراتيجية التحميل المستقل (Independent Fetching for Max Speed)
+  // =====================================================================
   useEffect(() => {
-    setLoading(false);
-
-    const fetchAllData = async () => {
+    
+    // 1. جلب المباريات
+    const fetchFixtures = async () => {
       try {
-        // الاستفادة من Promise.allSettled لضمان عدم تعطل باقي الـ APIs إذا فشل أحدهم
-        const results = await Promise.allSettled([
-          fetch(`${API_BASE_URL}/fixtures/`),
-          fetch(`${API_BASE_URL}/articles/`),
-          fetch(`${API_BASE_URL}/videos/`),
-          fetch(`${API_BASE_URL}/ads/?page=home`),
-          fetch(`${API_BASE_URL}/proxy/highlights/`),
-          fetch(`${API_BASE_URL}/proxy/goals-library/`) // 👈 جلب الأهداف
-        ]);
+        const res = await fetch(`${API_BASE_URL}/fixtures/`);
+        const fixturesRes = await res.json();
+        
+        const live = fixturesRes.filter?.(f => {
+            const isLiveStatus = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(f.status_short);
+            const isFinishedStr = f.status_long?.toLowerCase().includes('انتهت') || f.status_long?.toLowerCase().includes('finished');
+            return isLiveStatus && f.status_short !== 'FT' && !isFinishedStr && !isOverdue(f.date);
+        }) || [];
 
-        // 1. Fixtures
-        if (results[0].status === 'fulfilled') {
-          const fixturesRes = await results[0].value.json();
-          const live = fixturesRes.filter?.(f => {
-              const isLiveStatus = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(f.status_short);
-              const isFinishedStr = f.status_long?.toLowerCase().includes('انتهت') || f.status_long?.toLowerCase().includes('finished');
-              return isLiveStatus && f.status_short !== 'FT' && !isFinishedStr && !isOverdue(f.date);
-          }) || [];
+        const finished = fixturesRes.filter?.(f => {
+            const isFinishedStatus = ['FT', 'AET', 'PEN'].includes(f.status_short);
+            const isFinishedStr = f.status_long?.toLowerCase().includes('انتهت') || f.status_long?.toLowerCase().includes('finished');
+            return isFinishedStatus || isFinishedStr || isOverdue(f.date);
+        }) || [];
+        
+        const upcoming = fixturesRes.filter?.(f => {
+            const isUpcomingStatus = ['NS', 'TBD'].includes(f.status_short);
+            const notLiveOrFinished = !live.some(lm => lm.fixture_id === f.fixture_id) && !finished.some(fm => fm.fixture_id === f.fixture_id);
+            const isFuture = new Date(f.date).getTime() > new Date().getTime() - (60 * 60 * 1000);
+            return isUpcomingStatus && notLiveOrFinished && isFuture;
+        }) || [];
 
-          const finished = fixturesRes.filter?.(f => {
-              const isFinishedStatus = ['FT', 'AET', 'PEN'].includes(f.status_short);
-              const isFinishedStr = f.status_long?.toLowerCase().includes('انتهت') || f.status_long?.toLowerCase().includes('finished');
-              return isFinishedStatus || isFinishedStr || isOverdue(f.date);
-          }) || [];
-          const sortedFinished = finished.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-          const upcoming = fixturesRes.filter?.(f => {
-              const isUpcomingStatus = ['NS', 'TBD'].includes(f.status_short);
-              const notLiveOrFinished = !live.some(lm => lm.fixture_id === f.fixture_id) && !finished.some(fm => fm.fixture_id === f.fixture_id);
-              const isFuture = new Date(f.date).getTime() > new Date().getTime() - (60 * 60 * 1000);
-              return isUpcomingStatus && notLiveOrFinished && isFuture;
-          }) || [];
-
-          setLiveMatches(live);
-          setPastMatches(sortedFinished);
-          setTodayMatches(upcoming);
-        }
-
-        // 2. News
-        if (results[1].status === 'fulfilled') {
-          const articlesRes = await results[1].value.json();
-          setNews(Array.isArray(articlesRes) ? articlesRes.sort((a, b) => new Date(b.created_at || b.published_at) - new Date(a.created_at || a.published_at)) : []);
-        }
-
-        // 3. Local Videos
-        if (results[2].status === 'fulfilled') {
-          const videosRes = await results[2].value.json();
-          setLocalVideos(Array.isArray(videosRes) ? videosRes : []);
-        }
-
-        // 4. Ads
-        if (results[3].status === 'fulfilled') {
-          const adsRes = await results[3].value.json();
-          setAds(Array.isArray(adsRes) ? adsRes : []);
-        }
-
-        // 5. External Highlights
-        if (results[4].status === 'fulfilled') {
-          const extVideosRes = await results[4].value.json();
-          setExternalVideos(extVideosRes?.data || (Array.isArray(extVideosRes) ? extVideosRes : []));
-        }
-
-        // 6. Goals Library 👈
-        if (results[5].status === 'fulfilled') {
-          const goalsRes = await results[5].value.json();
-          setGoalsData(Array.isArray(goalsRes) ? goalsRes : []);
-        }
-
-      } catch (err) {
-        console.error("Error in fetching data:", err);
-      }
+        setLiveMatches(live);
+        setPastMatches(finished.sort((a, b) => new Date(b.date) - new Date(a.date)));
+        setTodayMatches(upcoming);
+      } catch (err) { console.error("Error fetching fixtures:", err); }
     };
 
-    fetchAllData();
+    // 2. جلب الأهداف (مع دعم قوي لهيكل الـ JSON)
+    const fetchGoals = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/proxy/goals-library/`);
+        const data = await res.json();
+        // دعم لـ data.data أو المصفوفة المباشرة لضمان عدم اختفاء الفيديوهات
+        setGoalsData(data?.data || (Array.isArray(data) ? data : []));
+      } catch (err) { console.error("Error fetching goals:", err); }
+    };
+
+    // 3. جلب الأخبار
+    const fetchNews = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/articles/`);
+        const data = await res.json();
+        const articles = data?.data || (Array.isArray(data) ? data : []);
+        setNews(articles.sort((a, b) => new Date(b.created_at || b.published_at) - new Date(a.created_at || a.published_at)));
+      } catch (err) { console.error("Error fetching news:", err); }
+    };
+
+    // 4. جلب الإعلانات
+    const fetchAds = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/ads/?page=home`);
+        const data = await res.json();
+        setAds(data?.data || (Array.isArray(data) ? data : []));
+      } catch (err) { console.error("Error fetching ads:", err); }
+    };
+
+    // 5. جلب الفيديوهات المحلية
+    const fetchLocalVideos = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/videos/`);
+        const data = await res.json();
+        setLocalVideos(data?.data || (Array.isArray(data) ? data : []));
+      } catch (err) { console.error("Error fetching local videos:", err); }
+    };
+
+    // 6. جلب الملخصات الخارجية
+    const fetchExternalVideos = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/proxy/highlights/`);
+        const data = await res.json();
+        setExternalVideos(data?.data || (Array.isArray(data) ? data : []));
+      } catch (err) { console.error("Error fetching external highlights:", err); }
+    };
+
+    // استدعاء جميع الدوال لتعمل بشكل موازي دون أن تعطل بعضها البعض
+    fetchFixtures();
+    fetchGoals();
+    fetchNews();
+    fetchAds();
+    fetchLocalVideos();
+    fetchExternalVideos();
   }, []);
 
+  // تشغيل GSAP عند تغير البيانات
   useEffect(() => {
-    if (!loading && !error) {
-      const ctx = gsap.context(() => {
-        gsap.utils.toArray('.gsap-fade-in').forEach((section) => {
-          gsap.fromTo(section, 
-            { y: 25, opacity: 0 },
-            { scrollTrigger: { trigger: section, start: "top 88%" }, y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }
-          );
-        });
-      }, mainRef);
-      return () => ctx.revert();
-    }
-  }, [loading, error, visibleLive, visibleToday, visiblePast, visibleNews, visibleLocalVideos, visibleExtVideos, visibleGoals]);
+    const ctx = gsap.context(() => {
+      gsap.utils.toArray('.gsap-fade-in').forEach((section) => {
+        gsap.fromTo(section, 
+          { y: 25, opacity: 0 },
+          { scrollTrigger: { trigger: section, start: "top 88%" }, y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }
+        );
+      });
+    }, mainRef);
+    return () => ctx.revert();
+  }, [liveMatches.length, todayMatches.length, goalsData.length, news.length]);
 
   const closeModal = () => setSelectedVideo(null);
-
   const activeAds = ads.filter(ad => ad.status === 'active');
 
-  if (loading) return <div className="grinta-loading-wrapper" dir="rtl"><div className="grinta-spinner"></div><p>جاري مزامنة البيانات المباشرة...</p></div>;
-  if (error) return <div className="grinta-error-wrapper" dir="rtl"><AlertCircle size={50} className="error-pulse" /><p>{error}</p></div>;
+  // تم إزالة شاشة التحميل المعطلة (loading). الصفحة ستفتح فوراً.
 
   return (
     <div className="home-container" dir="rtl">
       
-      {/* 🚀 SEO Optimization - Schema & Meta Tags */}
       <Helmet>
         <title>الجرينتا | مباريات اليوم، أهداف وملخصات حصرية</title>
         <meta name="description" content="منصة الجرينتا الرياضية - تابع نتائج المباريات بث مباشر، شاهد أحدث الأهداف، الملخصات العالمية، وأخبار كرة القدم الموثوقة لحظة بلحظة." />
-        <meta name="keywords" content="مباريات اليوم, اهداف المباريات, ملخصات كرة قدم, بث مباشر, الجرينتا, دوري ابطال اوروبا, اخبار الرياضة, Algrinta" />
-        <meta property="og:title" content="الجرينتا | بوابتك لعالم كرة القدم" />
-        <meta property="og:description" content="تابع نتائج المباريات بث مباشر، أحدث الأهداف والملخصات العالمية لحظة بلحظة." />
-        <meta property="og:type" content="website" />
-        {/* سكربت JSON-LD لتفهم عناكب جوجل طبيعة الموقع كمنصة رياضية إخبارية */}
-        <script type="application/ld+json">
-          {`
-            {
-              "@context": "https://schema.org",
-              "@type": "SportsOrganization",
-              "name": "Algrinta - الجرينتا",
-              "url": "https://algrinta.com",
-              "description": "منصة الجرينتا الرياضية لنتائج المباريات والأهداف والملخصات.",
-              "sameAs": [
-                "https://www.facebook.com/algrinta",
-                "https://twitter.com/algrinta"
-              ]
-            }
-          `}
-        </script>
       </Helmet>
 
       <Navbar />
@@ -189,7 +173,7 @@ const Home = () => {
           <div className="hero-banner-overlay"></div>
         </header>
 
-        {/* 📢 قسم الإعلان العلوي (تحت البانر مباشرة) */}
+        {/* 📢 الإعلان العلوي */}
         {activeAds.length > 0 && (
           <section className="top-ad-wrapper gsap-fade-in" style={{ display: 'flex', justifyContent: 'center', padding: '1.5rem 1rem', background: 'var(--grinta-dark-bg)' }}>
             <div className="ad-banner" style={{ width: '100%', maxWidth: '900px', borderRadius: '12px', overflow: 'hidden' }}>
@@ -217,7 +201,7 @@ const Home = () => {
             </div>
             {visibleLive < liveMatches.length && (
               <div className="load-more-center">
-                <button className="premium-more-btn" onClick={() => setVisibleLive(prev => prev + 4)} aria-label="عرض المزيد من المباريات المباشرة">
+                <button className="premium-more-btn" onClick={() => setVisibleLive(prev => prev + 4)}>
                   <span>عرض المزيد من المباريات</span> <ChevronDown size={18} />
                 </button>
               </div>
@@ -250,7 +234,7 @@ const Home = () => {
           )}
         </section>
 
-        {/* 🎯 مكتبة الأهداف الحصرية (تمت الإضافة هنا) */}
+        {/* 🎯 مكتبة الأهداف الحصرية (تم معالجة المشكلة والتسريع) */}
         <section className="section-layout gsap-fade-in">
           <div className="section-title-bar">
             <h2 className="title-text"><Target size={26} className="color-primary mr-2" /> أحدث الأهداف</h2>
@@ -264,7 +248,7 @@ const Home = () => {
                     className="premium-media-card is-video-card" 
                     onClick={() => setSelectedVideo({ 
                       title: `أهداف مباراة ${item.home_team} و ${item.away_team}`, 
-                      embed: `<iframe src="${item.embed_url}" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" style="width:100%; height:500px; border:none; border-radius:12px;"></iframe>`
+                      embed: `<iframe src="${item.embed_url}" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" style="width:100%; height:500px; border:none; border-radius:12px;" loading="lazy"></iframe>`
                     })}
                     style={{ cursor: 'pointer', backgroundImage: `url(${item.thumbnail_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
                   >
@@ -288,7 +272,7 @@ const Home = () => {
               )}
             </>
           ) : (
-            <div className="empty-state-card">جاري تحديث مكتبة الأهداف...</div>
+            <div className="empty-state-card">جاري تحديث مكتبة الأهداف... (البيانات ستظهر تلقائياً فور توفرها)</div>
           )}
         </section>
 
@@ -411,7 +395,8 @@ const Home = () => {
                       onClick={() => setSelectedVideo({ title: item.title, embed: mainVideo.embed })}
                       style={{ cursor: 'pointer' }}
                     >
-                      <img src={item.thumbnail} alt={item.title} className="media-card-img" loading="lazy" />
+                      {/* تفعيل التحميل الكسول للصور */}
+                      <img src={item.thumbnail} alt={item.title} className="media-card-img" loading="lazy" decoding="async" />
                       <div className="video-dark-overlay">
                         <PlayCircle size={55} className="play-icon-glow" />
                       </div>
@@ -436,11 +421,10 @@ const Home = () => {
           )}
         </section>
 
-        {/* 📢 قسم الإعلانات السفلي (نهاية الصفحة) */}
+        {/* 📢 قسم الإعلانات السفلي */}
         {activeAds.length > 0 && (
           <section className="section-layout gsap-fade-in">
             <div className="ads-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', margin: '20px 0' }}>
-              {/* عرض جميع الإعلانات في الأسفل (أو ممكن تجاوز الأول إذا أردت استخدام .slice(1) ) */}
               {activeAds.map((ad, index) => (
                 <div key={ad.id || index} className="ad-banner" style={{ width: '100%', maxWidth: '900px', borderRadius: '12px', overflow: 'hidden', display: 'flex', justifyContent: 'center' }}>
                   {ad.code ? (
@@ -500,7 +484,7 @@ const MatchCardItem = ({ match, isPast = false }) => {
         </div>
         <div className="match-card-teams-area">
           <div className="team-meta-block align-left">
-            <img src={match.home_team_logo} alt={`شعار ${match.home_team_name}`} loading="lazy" onError={(e) => e.target.src='https://placehold.co/45x45?text=Team'} />
+            <img src={match.home_team_logo} alt={`شعار ${match.home_team_name}`} loading="lazy" decoding="async" onError={(e) => e.target.src='https://placehold.co/45x45?text=Team'} />
             <span className="team-name-text">{match.home_team_name}</span>
           </div>
           <div className="score-display-center">
@@ -511,7 +495,7 @@ const MatchCardItem = ({ match, isPast = false }) => {
             )}
           </div>
           <div className="team-meta-block align-right">
-            <img src={match.away_team_logo} alt={`شعار ${match.away_team_name}`} loading="lazy" onError={(e) => e.target.src='https://placehold.co/45x45?text=Team'} />
+            <img src={match.away_team_logo} alt={`شعار ${match.away_team_name}`} loading="lazy" decoding="async" onError={(e) => e.target.src='https://placehold.co/45x45?text=Team'} />
             <span className="team-name-text">{match.away_team_name}</span>
           </div>
         </div>
