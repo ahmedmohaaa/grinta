@@ -714,45 +714,51 @@ body {
 
 
 
-
-
-
-
 /* ==========================================================================
-   إضافات وتعديلات الجرينتا الجديدة (الإعلانات + الأهداف)
+   إضافات جرينتا الجديدة (الإعلانات - الأهداف - السيو)
    ========================================================================== */
-
-/* تنسيق منطقة الإعلان العلوي لتبدو كجزء طبيعي من الموقع */
-.top-ad-wrapper {
-  border-bottom: 1px solid var(--grinta-border);
-  box-shadow: inset 0 -10px 20px -10px rgba(0, 0, 0, 0.5);
+.ad-section-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2rem 0;
+  min-height: 90px;
+  opacity: 0;
+  animation: fadeInAd 1s forwards ease-in-out;
 }
 
-.ad-banner {
+@keyframes fadeInAd {
+  to { opacity: 1; }
+}
+
+.ad-banner-container {
+  width: 100%;
+  max-width: 900px;
   background: var(--grinta-glass-card);
-  border: 1px dashed var(--grinta-border);
-  transition: all 0.3s ease;
-  min-height: 90px; /* ضمان عدم انهيار الواجهة في حالة تحميل الإعلان */
-}
-
-.ad-banner:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-/* تنسيق خاص لكروت الأهداف لتناسب الموبايل والشاشات الكبيرة */
-.premium-media-card.is-video-card iframe {
-  pointer-events: none; /* نمنع التفاعل مع الأيفريم من الخارج لكي يعمل الـ onClick للـ Modal */
-}
-
-/* تحسينات سيو إضافية (إخفاء النصوص المخصصة للقارئات الآلية إن وجدت مستقبلاً) */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  border: 1px solid var(--grinta-border);
+  border-radius: 12px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  text-align: center;
+}
+
+/* تنسيق كارت الأهداف ليتماشى مع الصفحة الرئيسية */
+.goal-meta-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.goal-score-badge {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--grinta-primary);
+  padding: 0.3rem 0.8rem;
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
 }
