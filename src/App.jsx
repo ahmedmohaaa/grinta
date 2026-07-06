@@ -31,7 +31,9 @@ import Contact from "./pages/staticpages/Contact";
 import Privacy from "./pages/staticpages/Privacy";
 import Terms from "./pages/staticpages/Terms";
 import StandingsPage from "./pages/standings/StandingsPage"; // 👈 تمت 
-import Stats from "./pages/standings/Stats"; // 👈 تمت الإضافة
+import Stats from "./pages/standings/Stats"; // 👈 
+import VideoDetails from "./pages/videodetails/VideoDetails"; // 👈 تمت الإضافة
+
 function App() {
   return (
     <Routes>
@@ -67,6 +69,8 @@ function App() {
 <Route path="/terms" element={<Terms />} />
 <Route path="/standings" element={<StandingsPage />} />
 <Route path="/stats" element={<Stats />} />
+            <Route path="/video/:id" element={<VideoDetails />} />
+
     </Routes>
   );
 }
