@@ -40,7 +40,7 @@ const Home = () => {
   const [visibleNews, setVisibleNews] = useState(4);
   const [visibleLocalVideos, setVisibleLocalVideos] = useState(4);
   const [visibleExtVideos, setVisibleExtVideos] = useState(6); 
-  const [visibleGoals, setVisibleGoals] = useState(4); // تحكم الأهداف - يبدأ بـ 4 تلقائياً
+  const [visibleGoals, setVisibleGoals] = useState(4); // تحكم الأهداف
 
   const [error, setError] = useState(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
@@ -264,7 +264,7 @@ const Home = () => {
           )}
         </section>
 
-        {/* 🎯 أهداف المباريات (تم تعديله للتحويل إلى صفحة تفاصيل الفيديو بالـ id) */}
+        {/* 🎯 أهداف المباريات (تم إصلاح جلب الصور والأسماء لتطابق السيرفر) */}
         {goals.length > 0 && (
           <section className="section-layout gsap-fade-in">
             <div className="section-title-bar">
@@ -272,7 +272,6 @@ const Home = () => {
             </div>
             <div className="media-bento-grid">
               {goals.slice(0, visibleGoals).map((item, idx) => {
-                // توليد معرف آمن في حال عدم وجوده من الباك إند لمنع المشاكل
                 const safeId = item.id || `goal-id-${idx}`;
                 const videoData = { ...item, id: safeId };
 
@@ -285,17 +284,17 @@ const Home = () => {
                     style={{ display: 'block' }}
                   >
                     <div className="premium-media-card is-video-card" style={{ cursor: 'pointer' }}>
-                      <img src={item.thumbnail_url} alt="أهداف المباراة" className="media-card-img" loading="lazy" decoding="async" />
+                      <img src={item.thumbnailUrl || 'https://via.placeholder.com/720x400.png?text=Goals'} alt={item.title} className="media-card-img" loading="lazy" decoding="async" />
                       <div className="video-dark-overlay">
                         <PlayCircle size={55} className="play-icon-glow" />
                       </div>
                       <div className="media-card-gradient" style={{ padding: '1.5rem 1.2rem 1.2rem' }}>
-                        <span className="media-badge">{item.platform}</span>
-                        <h3 className="media-card-title">{item.home_team} ضد {item.away_team}</h3>
-                        <div className="goal-meta-info">
-                           <span className="text-sm text-zinc-300">النتيجة النهائية</span>
-                           <span className="goal-score-badge">{item.score}</span>
-                        </div>
+                        <span className="media-badge" style={{
+                          backgroundColor: item.platform === 'Twitter' ? '#1DA1F2' : item.platform === 'Btolat' ? '#10b981' : '#3f3f46'
+                        }}>
+                          {item.platform === 'Btolat' ? 'أهداف' : item.platform}
+                        </span>
+                        <h3 className="media-card-title">{item.title}</h3>
                       </div>
                     </div>
                   </Link>
