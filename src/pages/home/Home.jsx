@@ -40,7 +40,7 @@ const Home = () => {
   const [visibleNews, setVisibleNews] = useState(4);
   const [visibleLocalVideos, setVisibleLocalVideos] = useState(4);
   const [visibleExtVideos, setVisibleExtVideos] = useState(6); 
-  const [visibleGoals, setVisibleGoals] = useState(4); // تحكم الأهداف
+  const [visibleGoals, setVisibleGoals] = useState(4); // تحكم الأهداف - يبدأ بـ 4 تلقائياً
 
   const [error, setError] = useState(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
@@ -264,37 +264,43 @@ const Home = () => {
           )}
         </section>
 
-        {/* 🎯 أهداف المباريات (جديد بالصفحة الرئيسية) */}
+        {/* 🎯 أهداف المباريات (تم تعديله للتحويل إلى صفحة تفاصيل الفيديو بالـ id) */}
         {goals.length > 0 && (
           <section className="section-layout gsap-fade-in">
             <div className="section-title-bar">
               <h2 className="title-text"><Target size={26} className="color-primary mr-2" /> أحدث الأهداف</h2>
             </div>
             <div className="media-bento-grid">
-              {goals.slice(0, visibleGoals).map((item, idx) => (
-                <div 
-                  key={idx} 
-                  className="premium-media-card is-video-card" 
-                  onClick={() => setSelectedVideo({ 
-                    title: `أهداف مباراة ${item.home_team} و ${item.away_team}`, 
-                    embed: `<iframe src="${item.embed_url}" allowfullscreen allow="autoplay; encrypted-media" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>` 
-                  })}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <img src={item.thumbnail_url} alt="أهداف المباراة" className="media-card-img" loading="lazy" decoding="async" />
-                  <div className="video-dark-overlay">
-                    <PlayCircle size={55} className="play-icon-glow" />
-                  </div>
-                  <div className="media-card-gradient" style={{ padding: '1.5rem 1.2rem 1.2rem' }}>
-                    <span className="media-badge">{item.platform}</span>
-                    <h3 className="media-card-title">{item.home_team} ضد {item.away_team}</h3>
-                    <div className="goal-meta-info">
-                       <span className="text-sm text-zinc-300">النتيجة النهائية</span>
-                       <span className="goal-score-badge">{item.score}</span>
+              {goals.slice(0, visibleGoals).map((item, idx) => {
+                // توليد معرف آمن في حال عدم وجوده من الباك إند لمنع المشاكل
+                const safeId = item.id || `goal-id-${idx}`;
+                const videoData = { ...item, id: safeId };
+
+                return (
+                  <Link 
+                    key={safeId} 
+                    to={`/video/${safeId}`} 
+                    state={{ video: videoData }} 
+                    className="global-card-link-reset"
+                    style={{ display: 'block' }}
+                  >
+                    <div className="premium-media-card is-video-card" style={{ cursor: 'pointer' }}>
+                      <img src={item.thumbnail_url} alt="أهداف المباراة" className="media-card-img" loading="lazy" decoding="async" />
+                      <div className="video-dark-overlay">
+                        <PlayCircle size={55} className="play-icon-glow" />
+                      </div>
+                      <div className="media-card-gradient" style={{ padding: '1.5rem 1.2rem 1.2rem' }}>
+                        <span className="media-badge">{item.platform}</span>
+                        <h3 className="media-card-title">{item.home_team} ضد {item.away_team}</h3>
+                        <div className="goal-meta-info">
+                           <span className="text-sm text-zinc-300">النتيجة النهائية</span>
+                           <span className="goal-score-badge">{item.score}</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
             {visibleGoals < goals.length && (
               <div className="load-more-center">
