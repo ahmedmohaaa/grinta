@@ -1,0 +1,187 @@
+/* =========================================
+   1. المتغيرات الأساسية (CSS Variables)
+========================================= */
+:root {
+  /* قم بتعديل هذا الرقم إذا كان حجم النافبار الخاص بك مختلفاً */
+  --navbar-height: 80px; 
+  --primary-color: #10b981; /* لون Emerald المستخدم في مشروعك */
+  --primary-hover: #059669;
+  --bg-color: #09090b; /* zinc-950 */
+  --card-bg: #18181b;
+  --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* =========================================
+   2. تهيئة قسم الفيديو (منع تداخل النافبار)
+========================================= */
+/* هذه الكلاس تضمن أن الفيديو يبدأ دائماً بعد النافبار مباشرة */
+.video-section-wrapper {
+  padding-top: var(--navbar-height);
+  width: 100%;
+  background: radial-gradient(circle at center, #1a1a24 0%, var(--bg-color) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: center;
+}
+
+/* =========================================
+   3. مشغل الفيديو (حجم اليوتيوب العملاق)
+========================================= */
+.youtube-style-player {
+  width: 100%;
+  max-width: 1600px; /* عرض ضخم للشاشات الكبيرة */
+  position: relative;
+  background-color: #000;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  /* الحفاظ على أبعاد الفيديو 16:9 */
+  aspect-ratio: 16 / 9;
+  /* أهم نقطة: ألا يتجاوز ارتفاع الفيديو الشاشة مطروحاً منه النافبار */
+  max-height: calc(100vh - var(--navbar-height));
+  margin: 0 auto;
+}
+
+.youtube-style-player iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* =========================================
+   4. تنسيقات العناوين والتفاصيل
+========================================= */
+/* =========================================
+   4. تنسيقات العناوين والتفاصيل
+========================================= */
+.video-title-premium {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  position: relative;
+  display: block; /* تغيير إلى block لتجنب مشاكل التداخل */
+  padding-bottom: 12px; /* مسافة آمنة للخط السفلي */
+  line-height: 1.6; /* ضمان تباعد الأسطر بشكل مريح */
+  color: #ffffff; /* اللون الأبيض للعناوين */
+}
+
+/* خط تجميلي تحت العنوان */
+.video-title-premium::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 60px;
+  height: 4px;
+  background-color: var(--primary-color);
+  border-radius: 2px;
+}
+
+/* خط تجميلي تحت العنوان */
+.video-title-premium::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  right: 0;
+  width: 60px;
+  height: 4px;
+  background-color: var(--primary-color);
+  border-radius: 2px;
+}
+
+/* =========================================
+   5. كروت الفيديوهات المقترحة (تصميم فخم)
+========================================= */
+.videos-grid-container {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.video-card-premium {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: var(--transition-smooth);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  will-change: transform;
+}
+
+.video-card-premium:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.video-thumbnail-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: #000;
+}
+
+.thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.video-card-premium:hover .thumbnail-img {
+  transform: scale(1.08); /* تكبير ناعم للصورة عند مرور الماوس */
+}
+
+/* تأثير التعتيم وزر التشغيل (Glassmorphism) */
+.play-overlay {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(3px); /* تأثير زجاجي جميل */
+  -webkit-backdrop-filter: blur(3px);
+  transition: opacity 0.3s ease;
+}
+
+.play-icon {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.5));
+}
+
+.video-card-premium:hover .play-icon {
+  transform: scale(1.3); /* تكبير زر التشغيل بمرونة */
+}
+
+/* شارة "أهداف" */
+.competition-badge {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* =========================================
+   6. التجاوب مع الشاشات (Responsive Design)
+========================================= */
+
+/* الشاشات المتوسطة (التابلت) */
+@media (max-width: 1024px) {
+  .youtube-style-player {
+    max-height: 60vh; /* تقليل الارتفاع قليلاً ليناسب التابلت */
+  }
+}
+
+/* الشاشات الصغيرة (الهواتف) */
+@media (max-width: 768px) {
+  :root {
+    --navbar-height: 65px; /* النافبار عادة يكون أصغر في الهاتف */
+  }
+  
+  .youtube-style-player {
+    max-height: none; /* السماح للفيديو بأخذ أبعاده الطبيعية في الهاتف */
+    aspect-ratio: 16 / 9;
+  }
+  
+  .video-title-premium::after {
+    width: 40px;
+    height: 3px;
+  }
+  
+  .video-section-wrapper {
+    padding-top: var(--navbar-height);
+  }
+}
