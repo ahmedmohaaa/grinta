@@ -61,10 +61,14 @@ const Videos = () => {
         ? { ...item, id: safeId, platform: item.channel ? 'Dailymotion' : 'Other', thumbnailUrl: item.imgUrl }
         : { ...item, id: safeId };
         
-      navigate(`/video/${safeId}`, { state: { video: videoData } });
+      // تجهيز العنوان والصورة وتشفيرهم ليكونوا صالحين للاستخدام داخل رابط (URL Safe)
+      const encodedTitle = encodeURIComponent(videoData.title || "جرينتا - روح كرة القدم");
+      const encodedImg = encodeURIComponent(videoData.thumbnailUrl || videoData.imgUrl || "https://algrinta.com/default-share.jpg");
+
+      // الانتقال للرابط الجديد مع دمج المتغيرات فيه (?t=...&img=...)
+      navigate(`/video/${safeId}?t=${encodedTitle}&img=${encodedImg}`, { state: { video: videoData } });
     }
   };
-
   return (
     <div className="videos-page-wrapper">
       <Navbar />
