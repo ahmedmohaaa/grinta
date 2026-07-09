@@ -10,10 +10,12 @@
 }
 
 .article-wrapper {
+  width: 100%; /* إضافة هامة لضمان التجاوب */
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
   flex: 1;
+  box-sizing: border-box; /* ضمان بقاء الهوامش الداخلية ضمن العرض الإجمالي */
 }
 
 /* =========================================
@@ -78,7 +80,7 @@
   font-family: inherit;
   font-weight: 600;
   transition: all 0.3s ease;
-  margin-right: auto; /* لدفعه لأقصى اليسار */
+  margin-right: auto;
 }
 
 .share-btn:hover {
@@ -93,6 +95,10 @@
   font-size: 1.15rem;
   line-height: 1.9;
   color: #d4d4d8;
+  /* منع الكلمات والروابط الطويلة من كسر التصميم */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 .article-rich-content p {
@@ -101,12 +107,34 @@
 
 /* تنسيق الصور القادمة من الـ Editor */
 .article-rich-content img {
-  max-width: 100%;
-  height: auto;
+  max-width: 100% !important; /* إجبار الصورة على عدم تخطي الشاشة */
+  height: auto !important;
   border-radius: 16px;
   margin: 2rem 0;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   display: block;
+}
+
+/* 🟢 إضافة هامة: تجاوب الفيديوهات (Iframes) وملخصات المباريات */
+.article-rich-content iframe,
+.article-rich-content video,
+.article-rich-content embed {
+  max-width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  display: block;
+  margin: 1.5rem auto;
+}
+
+/* 🟢 إضافة هامة: تجاوب الجداول (إحصائيات المباريات أو الترتيب) */
+.article-rich-content table {
+  width: 100% !important;
+  max-width: 100%;
+  display: block;
+  overflow-x: auto; /* السماح بالتمرير الأفقي للجدول فقط */
+  white-space: nowrap;
+  margin-bottom: 1.5rem;
 }
 
 /* تنسيق العناوين الفرعية */
@@ -182,13 +210,6 @@
   transform: translateY(-2px);
 }
 
-/* الشاشات الصغيرة */
-@media (max-width: 768px) {
-  .article-main-title { font-size: 2rem; }
-  .article-meta-info { flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .share-btn { margin-right: 0; width: 100%; justify-content: center; }
-  .article-rich-content { font-size: 1.05rem; }
-}
 /* =========================================
    تنسيقات الأخبار الخارجية
    ========================================= */
@@ -240,4 +261,44 @@
   color: #09090b;
   transform: translateY(-2px);
   box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+}
+
+/* =========================================
+   الشاشات الصغيرة والهواتف (Media Queries)
+   ========================================= */
+@media (max-width: 768px) {
+  .article-wrapper {
+    padding: 1.5rem 1rem; /* تقليل الهوامش الجانبية */
+    overflow-x: hidden; /* منع التمرير الأفقي الخارجي */
+  }
+  
+  .article-main-title { 
+    font-size: 1.8rem; 
+    margin-bottom: 1rem;
+  }
+  
+  .article-meta-info { 
+    flex-direction: column; 
+    align-items: flex-start; 
+    gap: 0.8rem; 
+  }
+  
+  .share-btn { 
+    margin-top: 1rem;
+    margin-right: 0; 
+    width: 100%; 
+    justify-content: center; 
+  }
+  
+  .article-rich-content { 
+    font-size: 1.05rem; 
+  }
+
+  .external-article-img {
+    max-height: 300px;
+  }
+
+  .external-content-wrapper {
+    padding: 1.5rem 1rem;
+  }
 }
