@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { PlayCircle, Flame, AlertCircle, ChevronDown, CheckCircle, Newspaper, MonitorPlay, Calendar, X, Target } from 'lucide-react';
-import { Helmet } from 'react-helmet';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import './Home.css';
@@ -20,21 +19,34 @@ const isOverdue = (matchDate) => {
   return hoursElapsed > 3.5;
 };
 
+// 🔥 مكون مصغر لعرض علامة التحميل بداخل الأقسام
+const SectionLoader = ({ message = "جاري تحميل البيانات..." }) => {
+  return (
+    <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 2rem', width: '100%', boxSizing: 'border-box' }}>
+      <div className="grinta-spinner"></div>
+      <p style={{ marginTop: '1.2rem', fontSize: '1.05rem', fontWeight: '600', color: '#a1a1aa' }}>{message}</p>
+    </div>
+  );
+};
+
 const Home = () => {
   const mainRef = useRef(null);
 
-  // --- حالات المباريات (تبقى كما هي لأنها تعتمد على الفلترة من مصفوفة واحدة) ---
+  // --- حالات المباريات ---
   const [liveMatches, setLiveMatches] = useState([]);
   const [todayMatches, setTodayMatches] = useState([]);
   const [pastMatches, setPastMatches] = useState([]); 
   const [visibleLive, setVisibleLive] = useState(4);
   const [visibleToday, setVisibleToday] = useState(4);
   const [visiblePast, setVisiblePast] = useState(4);
+  const [matchesLoading, setMatchesLoading] = useState(true); // 👈 حالة تحميل المباريات
 
   // --- حالات البيانات المعتمدة على الـ API Pagination ---
   const [news, setNews] = useState([]);
   const [newsPage, setNewsPage] = useState(1);
   const [hasMoreNews, setHasMoreNews] = useState(true);
+  const [newsLoading, setNewsLoading] = useState(true);
+  const [allNewsData, setAllNewsData] = useState([]);
 
   const [localVideos, setLocalVideos] = useState([]);
   const [localVideosPage, setLocalVideosPage] = useState(1);
@@ -47,33 +59,113 @@ const Home = () => {
   const [goals, setGoals] = useState([]);
   const [goalsPage, setGoalsPage] = useState(1);
   const [hasMoreGoals, setHasMoreGoals] = useState(true);
+  const [visibleGoals, setVisibleGoals] = useState(6);
+  const [goalsLoading, setGoalsLoading] = useState(true); // 👈 حالة تحميل الأهداف
 
   const [activeAds, setActiveAds] = useState([]);
   const [error, setError] = useState(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
 
-  // 1. دوال جلب البيانات الخفيفة (تعتمد على رقم الصفحة)
-  const fetchNews = async (page) => {
+  
+  // 1. دوال جلب البيانات
+  const extractImageFromHtml = (htmlContent) => {
+    if (!htmlContent) return 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=500';
+    const match = htmlContent.match(/<img[^>]+src="([^">]+)"/);
+    return match ? match[1] : 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=500';
+  };
+
+  const stripHtmlTags = (htmlContent) => {
+    if (!htmlContent) return '';
+    const cleanText = htmlContent.replace(/<\/?[^>]+(>|$)/g, "");
+    return cleanText.length > 120 ? cleanText.substring(0, 120) + "..." : cleanText;
+  };
+
+  const fetchNews = async () => {
     try {
-      // نطلب 4 مقالات فقط بناءً على رقم الصفحة
-      const res = await fetch(`${API_BASE_URL}/articles/?page=${page}&limit=4`);
-      const articlesRes = await res.json();
-      const newArticles = Array.isArray(articlesRes) ? articlesRes : [];
+      setNewsLoading(true);
       
-      if (newArticles.length < 4) setHasMoreNews(false); // إذا رجع أقل من 4، فهذه آخر صفحة
-      setNews(prev => page === 1 ? newArticles : [...prev, ...newArticles]);
-    } catch (err) { console.error("Error loading news:", err); }
+      const dbRes = await fetch(`${API_BASE_URL}/articles/`);
+      const dbData = dbRes.ok ? await dbRes.json() : [];
+
+      const btolatRes = await fetch(`${API_BASE_URL}/proxy/btolat-news/`);
+      const btolatData = btolatRes.ok ? await btolatRes.json() : [];
+
+      const formattedDbArticles = (Array.isArray(dbData) ? dbData : []).map(item => ({
+        id: `local-${item.id}`,
+        title: item.title,
+        excerpt: stripHtmlTags(item.content),
+        content: item.content, 
+        image: extractImageFromHtml(item.content),
+        published_at: item.published_at,
+        link: `/news/local-${item.id}`,
+        isExternal: false 
+      }));
+
+      const formattedBtolatArticles = (Array.isArray(btolatData) ? btolatData : []).map(item => ({
+        id: `btolat-${item.news_id}`,
+        title: item.title,
+        excerpt: stripHtmlTags(item.content),
+        content: item.content, 
+        image: item.thumbnail_url || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=500',
+        published_at: item.created_at,
+        link: `/news/btolat-${item.news_id}`,
+        isExternal: true 
+      }));
+
+      const allCombinedNews = [...formattedDbArticles, ...formattedBtolatArticles];
+      allCombinedNews.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+
+      setAllNewsData(allCombinedNews);
+
+      const initialNews = allCombinedNews.slice(0, 6);
+      setNews(initialNews);
+      
+      setHasMoreNews(allCombinedNews.length > 6);
+      setNewsLoading(false);
+    } catch (err) { 
+      console.error("Error loading combined news:", err); 
+      setNewsLoading(false);
+    }
+  };
+
+  const handleLoadMoreNews = () => {
+    const nextPage = newsPage + 1;
+    setNewsPage(nextPage);
+    
+    const limit = 6;
+    const endIndex = nextPage * limit;
+    
+    const newVisibleNews = allNewsData.slice(0, endIndex);
+    setNews(newVisibleNews);
+
+    if (endIndex >= allNewsData.length) {
+      setHasMoreNews(false);
+    }
+  };
+
+  const handleLoadMoreGoals = () => {
+    if (visibleGoals < goals.length) {
+      setVisibleGoals(prev => prev + 5);
+    } else if (hasMoreGoals) {
+      loadMoreGoals();
+      setVisibleGoals(prev => prev + 5);
+    }
   };
 
   const fetchGoals = async (page) => {
     try {
+      if (page === 1) setGoalsLoading(true);
       const res = await fetch(`${API_BASE_URL}/proxy/goals-library/?page=${page}&limit=4`);
       const goalsRes = await res.json();
       const newGoals = Array.isArray(goalsRes) ? goalsRes : [];
       
       if (newGoals.length < 4) setHasMoreGoals(false);
       setGoals(prev => page === 1 ? newGoals : [...prev, ...newGoals]);
-    } catch (err) { console.error("Error loading goals:", err); }
+    } catch (err) { 
+      console.error("Error loading goals:", err); 
+    } finally {
+      if (page === 1) setGoalsLoading(false);
+    }
   };
 
   const fetchLocalVideos = async (page) => {
@@ -89,7 +181,6 @@ const Home = () => {
 
   const fetchExternalVideos = async (page) => {
     try {
-      // جلب 6 عناصر للملخصات كما طلبت
       const res = await fetch(`${API_BASE_URL}/proxy/highlights/?page=${page}&limit=6`);
       const extVideosRes = await res.json();
       const newExtVideos = extVideosRes?.data || (Array.isArray(extVideosRes) ? extVideosRes : []);
@@ -102,6 +193,7 @@ const Home = () => {
   // 2. جلب البيانات الأولية عند تحميل الصفحة
   useEffect(() => {
     const fetchFixtures = async () => {
+      setMatchesLoading(true); // 👈 تشغيل التحميل
       try {
         const res = await fetch(`${API_BASE_URL}/fixtures/`);
         const fixturesRes = await res.json();
@@ -130,7 +222,11 @@ const Home = () => {
         setLiveMatches(live);
         setPastMatches(sortedFinished);
         setTodayMatches(upcoming);
-      } catch (err) { console.error("Error loading fixtures:", err); }
+      } catch (err) { 
+        console.error("Error loading fixtures:", err); 
+      } finally {
+        setMatchesLoading(false); // 👈 إيقاف التحميل
+      }
     };
 
     const fetchAds = async () => {
@@ -143,7 +239,6 @@ const Home = () => {
       } catch (err) { console.error("Error loading ads:", err); }
     };
 
-    // تحميل الصفحة الأولى من كل قسم بدلاً من تحميل كل البيانات
     Promise.allSettled([
       fetchFixtures(), 
       fetchNews(1), 
@@ -155,7 +250,7 @@ const Home = () => {
 
   }, []);
 
-  // 3. دوال زر "عرض المزيد" لجلب صفحات جديدة بدلاً من إظهار المخفي
+  // 3. دوال زر "عرض المزيد"
   const loadMoreNews = () => {
     const nextPage = newsPage + 1;
     setNewsPage(nextPage);
@@ -185,34 +280,37 @@ const Home = () => {
       gsap.utils.toArray('.gsap-fade-in').forEach((section) => {
         gsap.fromTo(section, 
           { y: 30, opacity: 0 },
-          { scrollTrigger: { trigger: section, start: "top 85%" }, y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }
+          { 
+            scrollTrigger: { 
+              trigger: section, 
+              start: "top 85%",
+              toggleActions: "play none none none" 
+            }, 
+            y: 0, 
+            opacity: 1, 
+            duration: 0.5, 
+            ease: "power2.out" 
+          }
         );
       });
-      ScrollTrigger.refresh();
     }, mainRef);
+    
     return () => ctx.revert();
-  }, [liveMatches, todayMatches, news, externalVideos, goals, activeAds]); // تحديث GSAP بناءً على البيانات
+  }, []); 
+
+  useEffect(() => {
+    ScrollTrigger.refresh(); 
+  }, [liveMatches, todayMatches, news, externalVideos, goals, activeAds]); 
 
   const closeModal = () => setSelectedVideo(null);
 
   const topAd = activeAds.length > 0 ? activeAds[0] : null;
   const bottomAd = activeAds.length > 1 ? activeAds[1] : (activeAds.length === 1 ? activeAds[0] : null);
 
-  const schemaMarkup = {
-    "@context": "https://schema.org",
-    "@type": "SportsOrganization",
-    "name": "جرينتا",
-    "url": "https://algrinta.com",
-    "description": "منصة جرينتا الرياضية - تابع المباريات المباشرة، شاهد أهداف اليوم، وملخصات كروية عالمية.",
-    "sameAs": [] 
-  };
-
   return (
     <div className="home-container" dir="rtl">
-      <Helmet>
         <title>جرينتا | الرئيسية - بث مباشر، أهداف وملخصات حصرية</title>
         <meta name="description" content="منصة جرينتا الرياضية - الأسرع في تغطية المباريات المباشرة..." />
-      </Helmet>
 
       <Navbar />
 
@@ -235,22 +333,28 @@ const Home = () => {
         )}
 
         {/* ⚽ المباريات */}
-        {liveMatches.length > 0 && (
+        {(matchesLoading || liveMatches.length > 0) && (
           <section className="section-layout gsap-fade-in">
             <div className="section-title-bar">
               <h2 className="title-text"><Flame size={26} className="fire-glow-icon" /> المباريات الجارية الآن</h2>
             </div>
-            <div className="matches-responsive-grid">
-              {liveMatches.slice(0, visibleLive).map(match => (
-                <MatchCardItem key={match.fixture_id || match.id} match={match} />
-              ))}
-            </div>
-            {visibleLive < liveMatches.length && (
-              <div className="load-more-center">
-                <button className="premium-more-btn" onClick={() => setVisibleLive(prev => prev + 4)}>
-                  <span>عرض المزيد من المباريات</span> <ChevronDown size={18} />
-                </button>
-              </div>
+            {matchesLoading ? (
+              <SectionLoader message="جاري جلب المباريات المباشرة..." />
+            ) : (
+              <>
+                <div className="matches-responsive-grid">
+                  {liveMatches.slice(0, visibleLive).map(match => (
+                    <MatchCardItem key={match.fixture_id || match.id} match={match} />
+                  ))}
+                </div>
+                {visibleLive < liveMatches.length && (
+                  <div className="load-more-center">
+                    <button className="premium-more-btn" onClick={() => setVisibleLive(prev => prev + 4)}>
+                      <span>عرض المزيد من المباريات</span> <ChevronDown size={18} />
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </section>
         )}
@@ -260,7 +364,9 @@ const Home = () => {
           <div className="section-title-bar">
             <h2 className="title-text"><Calendar size={26} className="color-primary mr-2" /> مباريات اليوم القادمة</h2>
           </div>
-          {todayMatches.length > 0 ? (
+          {matchesLoading ? (
+            <SectionLoader message="جاري جلب مباريات اليوم..." />
+          ) : todayMatches.length > 0 ? (
             <>
               <div className="matches-responsive-grid">
                 {todayMatches.slice(0, visibleToday).map(match => (
@@ -281,95 +387,139 @@ const Home = () => {
         </section>
 
         {/* 🏁 نتائج سابقة */}
-        <section className="section-layout gsap-fade-in">
-          <div className="section-title-bar">
-            <h2 className="title-text"><CheckCircle size={26} className="text-gray-400 mr-2" /> نتائج المباريات السابقة</h2>
-          </div>
-          {pastMatches.length > 0 && (
-            <>
-              <div className="matches-responsive-grid">
-                {pastMatches.slice(0, visiblePast).map(match => (
-                  <MatchCardItem key={match.fixture_id || match.id} match={match} isPast={true} />
-                ))}
-              </div>
-              {visiblePast < pastMatches.length && (
-                <div className="load-more-center">
-                  <button className="premium-more-btn" onClick={() => setVisiblePast(prev => prev + 4)}>
-                    <span>عرض المزيد من النتائج</span> <ChevronDown size={18} />
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-        </section>
-
-        {/* 🎯 الأهداف */}
-        {goals.length > 0 && (
+        {(matchesLoading || pastMatches.length > 0) && (
           <section className="section-layout gsap-fade-in">
             <div className="section-title-bar">
-              <h2 className="title-text"><Target size={26} className="color-primary mr-2" /> أحدث الأهداف</h2>
+              <h2 className="title-text"><CheckCircle size={26} className="text-gray-400 mr-2" /> نتائج المباريات السابقة</h2>
             </div>
-            <div className="media-bento-grid">
-              {goals.map((item, idx) => {
-                const safeId = item.id || `goal-id-${idx}`;
-                return (
-                  <Link key={safeId} to={`/video/${safeId}`} state={{ video: { ...item, id: safeId } }} className="global-card-link-reset" style={{ display: 'block' }}>
-                    <div className="premium-media-card is-video-card" style={{ cursor: 'pointer' }}>
-                      <img src={item.thumbnailUrl || 'https://via.placeholder.com/720x400.png?text=Goals'} alt={item.title} className="media-card-img" loading="lazy" decoding="async" />
-                      <div className="video-dark-overlay">
-                        <PlayCircle size={55} className="play-icon-glow" />
-                      </div>
-                      <div className="media-card-gradient" style={{ padding: '1.5rem 1.2rem 1.2rem' }}>
-                        <span className="media-badge" style={{ backgroundColor: item.platform === 'Twitter' ? '#1DA1F2' : item.platform === 'Btolat' ? '#10b981' : '#3f3f46' }}>
-                          {item.platform === 'Btolat' ? 'أهداف' : item.platform}
-                        </span>
-                        <h3 className="media-card-title">{item.title}</h3>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-            {hasMoreGoals && (
-              <div className="load-more-center">
-                <button className="premium-more-btn" onClick={loadMoreGoals}>
-                  <span>عرض المزيد من الأهداف</span> <ChevronDown size={18} />
-                </button>
-              </div>
+            {matchesLoading ? (
+              <SectionLoader message="جاري جلب النتائج..." />
+            ) : (
+              <>
+                <div className="matches-responsive-grid">
+                  {pastMatches.slice(0, visiblePast).map(match => (
+                    <MatchCardItem key={match.fixture_id || match.id} match={match} isPast={true} />
+                  ))}
+                </div>
+                {visiblePast < pastMatches.length && (
+                  <div className="load-more-center">
+                    <button className="premium-more-btn" onClick={() => setVisiblePast(prev => prev + 4)}>
+                      <span>عرض المزيد من النتائج</span> <ChevronDown size={18} />
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </section>
         )}
 
-        {/* 📰 الأخبار */}
-        <section className="section-layout gsap-fade-in">
-          <div className="section-title-bar">
-            <h2 className="title-text"><Newspaper size={26} className="color-primary" /> أحدث الأخبار والتقارير</h2>
-          </div>
-          {news.length > 0 && (
-            <>
-              <div className="media-bento-grid">
-                {news.map(article => (
-                  <Link key={article.id} to={`/news/${article.id}`} className="global-card-link-reset" style={{ display: 'block' }}>
-                    <div className="premium-media-card text-only-card">
-                      <div className="text-card-content">
-                        <span className="media-badge">أخبار عاجلة</span>
-                        <h3 className="media-card-title text-only-title">{article.title}</h3>
-                        <p className="news-date-text">
-                          {new Date(article.created_at || article.published_at || Date.now()).toLocaleDateString('ar-EG')}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-              {hasMoreNews && (
-                <div className="load-more-center">
-                  <button className="premium-more-btn" onClick={loadMoreNews}>
-                    <span>عرض المزيد من الأخبار</span> <ChevronDown size={18} />
-                  </button>
+        {/* 🎯 الأهداف */}
+        {(goalsLoading || goals.length > 0) && (
+          <section className="section-layout gsap-fade-in">
+            <div className="section-title-bar">
+              <h2 className="title-text"><Target size={26} className="color-primary mr-2" /> أحدث الأهداف</h2>
+            </div>
+            {goalsLoading ? (
+              <SectionLoader message="جاري تحميل أهداف وملخصات المباريات..." />
+            ) : (
+              <>
+                <div className="media-bento-grid">
+                  {goals.slice(0, visibleGoals).map((item, idx) => {
+                    const safeId = item.id || `goal-id-${idx}`;
+                    return (
+                      <Link key={safeId} to={`/video/${safeId}`} state={{ video: { ...item, id: safeId } }} className="global-card-link-reset" style={{ display: 'block' }}>
+                        <div className="premium-media-card is-video-card" style={{ cursor: 'pointer' }}>
+                          <img src={item.thumbnailUrl || 'https://via.placeholder.com/720x400.png?text=Goals'} alt={item.title} className="media-card-img" loading="lazy" decoding="async" />
+                          <div className="video-dark-overlay">
+                            <PlayCircle size={55} className="play-icon-glow" />
+                          </div>
+                          <div className="media-card-gradient" style={{ padding: '1.5rem 1.2rem 1.2rem' }}>
+                            <span className="media-badge" style={{ backgroundColor: item.platform === 'Twitter' ? '#1DA1F2' : item.platform === 'Btolat' ? '#10b981' : '#3f3f46' }}>
+                              {item.platform === 'Btolat' ? 'أهداف' : item.platform}
+                            </span>
+                            <h3 className="media-card-title">{item.title}</h3>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
-              )}
-            </>
+                {(visibleGoals < goals.length || hasMoreGoals) && (
+                  <div className="load-more-center">
+                    <button className="premium-more-btn" onClick={handleLoadMoreGoals}>
+                      <span>عرض المزيد من الأهداف</span> <ChevronDown size={18} />
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        )}
+
+        {/* 📰 قسم أحدث الأخبار والتقارير */}
+        <section className="news-section-wrapper global-section-padding">
+          <div className="section-header-flex">
+            <div className="section-title-block">
+              <Newspaper className="section-title-icon" size={24} />
+              <h2 className="section-main-heading">أحدث الأخبار والتقارير</h2>
+            </div>
+          </div>
+
+          <div className="news-cards-layout-grid">
+            {newsLoading && allNewsData.length === 0 ? (
+              <SectionLoader message="جاري تحميل آخر الأخبار والتقارير..." />
+            ) : (
+              news.map((newsItem) => (
+                <Link 
+                  to={newsItem.link} 
+                  key={newsItem.id} 
+                  className="news-card-item-box"
+                  state={{ article: newsItem }} 
+                >
+                  <div className="news-card-img-container">
+                    <img 
+                      src={newsItem.image} 
+                      alt={newsItem.title} 
+                      loading="lazy" 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=500';
+                      }}
+                    />
+                  </div>
+                  <div className="news-card-info-content">
+                    <h3 className="news-card-item-title">{newsItem.title}</h3>
+                    <p className="news-card-item-snippet">{newsItem.excerpt}</p>
+                    <div className="news-card-footer-meta">
+                      <span className="news-card-date-text">
+                        {new Date(newsItem.published_at).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' })}
+                      </span>
+                      <span className="news-read-more-link">اقرأ المزيد ←</span>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+
+          {hasMoreNews && news.length > 0 && (
+            <div className="load-more-container-center">
+              <button 
+                className="global-load-more-btn" 
+                onClick={handleLoadMoreNews}
+                disabled={newsLoading}
+              >
+                {newsLoading ? 'جاري التحميل...' : 'عرض المزيد من الأخبار'}
+                <ChevronDown size={18} style={{ marginRight: '8px' }} />
+              </button>
+            </div>
+          )}
+
+          {!newsLoading && news.length === 0 && (
+            <div className="no-data-placeholder-box">
+              <AlertCircle size={32} />
+              <p>لا توجد أخبار متاحة حالياً.</p>
+            </div>
           )}
         </section>
 
@@ -403,38 +553,7 @@ const Home = () => {
         )}
 
         {/* 🌐 ملخصات عالمية */}
-        {externalVideos.length > 0 && (
-          <section className="section-layout gsap-fade-in">
-            <div className="section-title-bar">
-              <h2 className="title-text"><MonitorPlay size={26} className="color-accent" /> ملخصات عالمية</h2>
-            </div>
-            <div className="media-bento-grid">
-              {externalVideos.map((item, idx) => {
-                const mainVideo = item.videos && item.videos.length > 0 ? item.videos[0] : null;
-                if (!mainVideo) return null;
-                return (
-                  <div key={idx} className="premium-media-card is-video-card" onClick={() => setSelectedVideo({ title: item.title, embed: mainVideo.embed })} style={{ cursor: 'pointer' }}>
-                    <img src={item.thumbnail} alt={item.title} className="media-card-img" loading="lazy" decoding="async" />
-                    <div className="video-dark-overlay">
-                      <PlayCircle size={55} className="play-icon-glow" />
-                    </div>
-                    <div className="media-card-gradient">
-                      <span className="media-badge badge-external">{item.competition}</span>
-                      <h3 className="media-card-title">{item.title}</h3>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            {hasMoreExtVideos && (
-              <div className="load-more-center">
-                <button className="premium-more-btn" onClick={loadMoreExtVideos}>
-                  <span>عرض المزيد من الملخصات</span> <ChevronDown size={18} />
-                </button>
-              </div>
-            )}
-          </section>
-        )}
+
 
         {bottomAd && (
           <div className="ad-section-wrapper px-4 mb-8">
