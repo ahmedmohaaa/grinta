@@ -5,7 +5,7 @@ import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import './NewsDetail.css';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+const API_BASE_URL = 'https://api.algrinta.com/api';
 
 const NewsDetail = () => {
   const { id } = useParams();
