@@ -187,7 +187,7 @@ const Navbar = () => {
 
           <MobileLink
             to="/videos"
-            title="ملخصات المباريات"
+            title="الاهداف"
           />
 
           <MobileLink
