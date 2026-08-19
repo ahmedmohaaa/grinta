@@ -234,8 +234,7 @@ const Home = () => {
         const res = await fetch(`${API_BASE_URL}/ads/?page=home`);
         const adsRes = await res.json();
         if (Array.isArray(adsRes)) {
-          setActiveAds(adsRes.filter(ad => ad.status === 'active'));
-        }
+          setActiveAds(adsRes.filter(ad => ad.status === 'active' && ad.page === 'home'));        }
       } catch (err) { console.error("Error loading ads:", err); }
     };
 
