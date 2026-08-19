@@ -1,23 +1,75 @@
 import React, { useState, useEffect } from 'react';
 import { PlayCircle, X, Loader2, AlertCircle, Film, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Tweet } from 'react-tweet'; 
+import { Tweet } from 'react-tweet';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import './Videos.css';
 
 const API_BASE_URL = 'https://api.algrinta.com/api';
+/* 🎯 مكون عرض الإعلان */
+const AdSlot = ({ ad }) => {
+  if (!ad) return null;
+  return (
+    <div style={{ width: '100%', maxWidth: '1100px', margin: '28px auto', padding: '0 16px', boxSizing: 'border-box' }}>
+      <div style={{
+        position: 'relative',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '110px',
+        padding: '20px 14px 14px',
+        background: 'linear-gradient(180deg, rgba(128,128,128,0.08), rgba(128,128,128,0.03))',
+        border: '1px solid rgba(128,128,128,0.18)',
+        borderRadius: '14px',
+        overflow: 'hidden'
+      }}>
+        <span style={{
+          position: 'absolute', top: '7px', insetInlineStart: '12px',
+          fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px',
+          color: '#8f8f97', userSelect: 'none'
+        }}>
+          إعلان
+        </span>
+        {ad.code ? (
+          <div style={{ width: '100%', textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: ad.code }} />
+        ) : (
+          <span style={{ color: '#9ca3af', fontSize: '14px', fontWeight: 600 }}>{ad.name}</span>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const Videos = () => {
   const [highlightsData, setHighlightsData] = useState([]);
   const [goalsData, setGoalsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedVideo, setSelectedVideo] = useState(null); 
-  
+  const [selectedVideo, setSelectedVideo] = useState(null);
   const [activeTab, setActiveTab] = useState('goals');
-  
+
+  /* 📢 حالة الإعلانات */
+  const [activeAds, setActiveAds] = useState([]);
+
   const navigate = useNavigate();
+
+  /* 📢 جلب إعلانات صفحة الفيديوهات فقط */
+  useEffect(() => {
+    const fetchAds = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/ads/?page=videos`);
+        const adsRes = await res.json();
+        if (Array.isArray(adsRes)) {
+          setActiveAds(adsRes.filter(ad => ad.status === 'active' && ad.page === 'videos'));
+        }
+      } catch (err) { console.error("Error loading ads:", err); }
+    };
+    fetchAds();
+  }, []);
+
+  const topAd = activeAds.length > 0 ? activeAds[0] : null;
+  const bottomAd = activeAds.length > 1 ? activeAds[1] : null;
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -49,35 +101,35 @@ const Videos = () => {
     fetchVideos();
   }, []);
 
-  // 👈 التعديل هنا: توليد ID مؤقت إذا كان مفقوداً بسبب الكاش القديم في الباك إند
   const handleVideoClick = (item, isHighlight = false) => {
     if (!isHighlight && item.platform === 'Twitter') {
       setSelectedVideo(item);
     } else {
-      // بناء ID آمن لتجنب مشكلة /video/undefined
       const safeId = item.id || `temp-id-${Math.random().toString(36).substr(2, 9)}`;
-      
+
       const videoData = isHighlight 
         ? { ...item, id: safeId, platform: item.channel ? 'Dailymotion' : 'Other', thumbnailUrl: item.imgUrl }
         : { ...item, id: safeId };
-        
-      // تجهيز العنوان والصورة وتشفيرهم ليكونوا صالحين للاستخدام داخل رابط (URL Safe)
+
       const encodedTitle = encodeURIComponent(videoData.title || "جرينتا - روح كرة القدم");
       const encodedImg = encodeURIComponent(videoData.thumbnailUrl || videoData.imgUrl || "https://algrinta.com/default-share.jpg");
 
-      // الانتقال للرابط الجديد مع دمج المتغيرات فيه (?t=...&img=...)
       navigate(`/video/${safeId}?t=${encodedTitle}&img=${encodedImg}`, { state: { video: videoData } });
     }
   };
+
   return (
     <div className="videos-page-wrapper">
       <Navbar />
-      
+
       <main className="container mx-auto px-4 py-8">
         <header className="videos-hero-header">
           <h1>🎬 مكتبة الفيديوهات</h1>
           <p>شاهد أحدث أهداف وملخصات مباريات الدوريات الكبرى بجودة عالية</p>
         </header>
+
+        {/* 📢 إعلان أعلى مكتبة الفيديوهات */}
+        <AdSlot ad={topAd} />
 
         <div className="tabs-wrapper">
           <div className="tabs-container">
@@ -88,7 +140,6 @@ const Videos = () => {
               <Target size={18} />
               <span>مكتبة الأهداف</span>
             </button>
-
             <button 
               className={`tab-btn ${activeTab === 'highlights' ? 'active' : ''}`}
               onClick={() => setActiveTab('highlights')}
@@ -117,7 +168,6 @@ const Videos = () => {
                   <div className="col-span-full text-center py-10 text-zinc-500">لا توجد أهداف متاحة حالياً.</div>
                 )}
                 {goalsData.map((item, idx) => {
-                  // 👈 تأمين الـ Key في حال كان الـ id غير موجود
                   const safeItem = { ...item, id: item.id || `fallback-goal-${idx}` };
                   return (
                     <div key={safeItem.id} className="video-card-premium cursor-pointer" onClick={() => handleVideoClick(safeItem, false)}>
@@ -169,9 +219,11 @@ const Videos = () => {
             )}
           </>
         )}
+
+        {/* 📢 إعلان أسفل مكتبة الفيديوهات */}
+        <AdSlot ad={bottomAd} />
       </main>
 
-      {/* المودال محذوف منه الـ Video المباشر ومقتصر على تويتر فقط كما اتفقنا */}
       {selectedVideo && (
         <div className="video-modal-overlay" onClick={() => setSelectedVideo(null)}>
           <div className="video-modal-content" onClick={(e) => e.stopPropagation()}>
