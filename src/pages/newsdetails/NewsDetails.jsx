@@ -6,6 +6,39 @@ import Footer from '../../components/footer/Footer';
 import './NewsDetail.css';
 
 const API_BASE_URL = 'https://api.algrinta.com/api';
+/* 🎯 مكون عرض الإعلان */
+const AdSlot = ({ ad }) => {
+  if (!ad) return null;
+  return (
+    <div style={{ width: '100%', maxWidth: '1100px', margin: '28px auto', padding: '0 16px', boxSizing: 'border-box' }}>
+      <div style={{
+        position: 'relative',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '110px',
+        padding: '20px 14px 14px',
+        background: 'linear-gradient(180deg, rgba(128,128,128,0.08), rgba(128,128,128,0.03))',
+        border: '1px solid rgba(128,128,128,0.18)',
+        borderRadius: '14px',
+        overflow: 'hidden'
+      }}>
+        <span style={{
+          position: 'absolute', top: '7px', insetInlineStart: '12px',
+          fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px',
+          color: '#8f8f97', userSelect: 'none'
+        }}>
+          إعلان
+        </span>
+        {ad.code ? (
+          <div style={{ width: '100%', textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: ad.code }} />
+        ) : (
+          <span style={{ color: '#9ca3af', fontSize: '14px', fontWeight: 600 }}>{ad.name}</span>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const NewsDetail = () => {
   const { id } = useParams();
@@ -13,14 +46,33 @@ const NewsDetail = () => {
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  /* 📢 حالة الإعلانات */
+  const [activeAds, setActiveAds] = useState([]);
+
   const handleImageError = (e) => {
-    e.target.onerror = null; 
+    e.target.onerror = null;
     e.target.src = 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=2070';
   };
 
+  /* 📢 جلب إعلانات صفحة تفاصيل الخبر فقط */
+  useEffect(() => {
+    const fetchAds = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/ads/?page=news-details`);
+        const adsRes = await res.json();
+        if (Array.isArray(adsRes)) {
+          setActiveAds(adsRes.filter(ad => ad.status === 'active' && ad.page === 'news-details'));
+        }
+      } catch (err) { console.error("Error loading ads:", err); }
+    };
+    fetchAds();
+  }, []);
+
+  const topAd = activeAds.length > 0 ? activeAds[0] : null;
+  const bottomAd = activeAds.length > 1 ? activeAds[1] : null;
+
   useEffect(() => {
     const fetchArticleDetails = async () => {
-      // 1. استخدام البيانات الممررة من الصفحة السابقة لسرعة صاروخية (0ms)
       if (location.state && location.state.articleData) {
         setArticle(location.state.articleData);
         setLoading(false);
@@ -28,13 +80,11 @@ const NewsDetail = () => {
         return;
       }
 
-      // 2. إذا دخل الزائر عبر رابط مباشر (Direct Link) أو عمل Refresh
       try {
         const isBtolat = id.toString().startsWith('btolat-');
         const cleanId = id.toString().replace('local-', '').replace('btolat-', '');
 
         if (!isBtolat) {
-          // جلب خبر محلي
           const res = await fetch(`${API_BASE_URL}/articles/${cleanId}/`);
           if (res.ok) {
             const data = await res.json();
@@ -48,16 +98,14 @@ const NewsDetail = () => {
             });
           }
         } else {
-          // جلب خبر مسحوب (مخزن في السيرفر)
           const res = await fetch(`${API_BASE_URL}/proxy/btolat-news/`);
           if (res.ok) {
             const proxyData = await res.json();
             const matchedArticle = proxyData.find(item => item.news_id === cleanId);
-
             if (matchedArticle) {
               setArticle({
                 title: matchedArticle.title,
-                content: matchedArticle.content, // HTML كامل
+                content: matchedArticle.content,
                 published_at: matchedArticle.created_at,
                 image: matchedArticle.thumbnail_url || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=2000',
                 author: matchedArticle.author || "محرر رياضي",
@@ -77,12 +125,9 @@ const NewsDetail = () => {
     window.scrollTo(0, 0);
   }, [id, location.state]);
 
-  // SEO: تحديث Meta Tags و Schema Markup عند تحميل الخبر
   useEffect(() => {
     if (article) {
       document.title = `${article.title} | الجرينتا`;
-      
-      // تحديث وصف الصفحة لجوجل
       const metaDescription = document.querySelector('meta[name="description"]');
       if (metaDescription && article.excerpt) {
         metaDescription.setAttribute("content", article.excerpt);
@@ -90,7 +135,6 @@ const NewsDetail = () => {
     }
   }, [article]);
 
-  // تجهيز كود JSON-LD لمحركات البحث (SEO قوى جداً)
   const generateSchemaMarkup = () => {
     if (!article) return null;
     const schema = {
@@ -100,8 +144,8 @@ const NewsDetail = () => {
       "image": [article.image],
       "datePublished": article.published_at,
       "author": [{
-          "@type": "Person",
-          "name": article.author || "الجرينتا"
+        "@type": "Person",
+        "name": article.author || "الجرينتا"
       }]
     };
     return JSON.stringify(schema);
@@ -135,9 +179,8 @@ const NewsDetail = () => {
 
   return (
     <div className="news-detail-container" dir="rtl">
-      {/* Schema Markup for SEO */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: generateSchemaMarkup() }} />
-      
+
       <Navbar />
 
       <main className="article-wrapper">
@@ -145,9 +188,7 @@ const NewsDetail = () => {
           <Link to="/news" className="back-link" aria-label="العودة لصفحة الأخبار">
             <ArrowRight size={20} aria-hidden="true" /> عودة إلى الأخبار
           </Link>
-          
           <h1 className="article-main-title">{article.title}</h1>
-          
           <div className="article-meta-info">
             <time dateTime={article.published_at} className="meta-item">
               <Calendar size={18} aria-hidden="true" />
@@ -173,7 +214,9 @@ const NewsDetail = () => {
           </div>
         </header>
 
-        {/* عرض الصورة البارزة للأخبار (خاصة المسحوبة) */}
+        {/* 📢 إعلان أعلى تفاصيل الخبر (بعد العنوان والميتا مباشرة) */}
+        <AdSlot ad={topAd} />
+
         {article.image && article.isScraped && (
           <figure className="external-article-img-wrapper">
             <img 
@@ -186,12 +229,13 @@ const NewsDetail = () => {
           </figure>
         )}
 
-        {/* عرض المحتوى: حالياً كلاهما (المحلي والمسحوب) يعتمدان على تنسيق HTML */}
         <article 
           className="article-rich-content"
           dangerouslySetInnerHTML={{ __html: article.content }}
         />
 
+        {/* 📢 إعلان أسفل تفاصيل الخبر (بعد نهاية المحتوى) */}
+        <AdSlot ad={bottomAd} />
       </main>
 
       <Footer />
