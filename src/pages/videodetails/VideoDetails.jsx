@@ -3,22 +3,75 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { PlayCircle, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
-import './VideoDetails.css'; 
+import './VideoDetails.css';
 
 const API_BASE_URL = 'https://api.algrinta.com/api';
+
+/* 🎯 مكون عرض الإعلان */
+const AdSlot = ({ ad }) => {
+  if (!ad) return null;
+  return (
+    <div style={{ width: '100%', maxWidth: '1100px', margin: '28px auto', padding: '0 16px', boxSizing: 'border-box' }}>
+      <div style={{
+        position: 'relative',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '110px',
+        padding: '20px 14px 14px',
+        background: 'linear-gradient(180deg, rgba(128,128,128,0.08), rgba(128,128,128,0.03))',
+        border: '1px solid rgba(128,128,128,0.18)',
+        borderRadius: '14px',
+        overflow: 'hidden'
+      }}>
+        <span style={{
+          position: 'absolute', top: '7px', insetInlineStart: '12px',
+          fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px',
+          color: '#8f8f97', userSelect: 'none'
+        }}>
+          إعلان
+        </span>
+        {ad.code ? (
+          <div style={{ width: '100%', textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: ad.code }} />
+        ) : (
+          <span style={{ color: '#9ca3af', fontSize: '14px', fontWeight: 600 }}>{ad.name}</span>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const VideoDetails = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  
   const [video, setVideo] = useState(location.state?.video || null);
   const [relatedVideos, setRelatedVideos] = useState([]);
   const [loading, setLoading] = useState(!video);
 
+  /* 📢 حالة الإعلانات */
+  const [activeAds, setActiveAds] = useState([]);
+
+  /* 📢 جلب إعلانات صفحة تفاصيل الفيديو فقط */
+  useEffect(() => {
+    const fetchAds = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/ads/?page=video-details`);
+        const adsRes = await res.json();
+        if (Array.isArray(adsRes)) {
+          setActiveAds(adsRes.filter(ad => ad.status === 'active' && ad.page === 'video-details'));
+        }
+      } catch (err) { console.error("Error loading ads:", err); }
+    };
+    fetchAds();
+  }, []);
+
+  const topAd = activeAds.length > 0 ? activeAds[0] : null;
+  const bottomAd = activeAds.length > 1 ? activeAds[1] : null;
+
   useEffect(() => {
     window.scrollTo(0, 0);
-    
+
     const fetchAllVideos = async () => {
       try {
         const [highlightsRes, goalsRes] = await Promise.all([
@@ -32,22 +85,19 @@ const VideoDetails = () => {
         const highlightsList = highlightsJson.data && Array.isArray(highlightsJson.data) ? highlightsJson.data : [];
         const goalsList = Array.isArray(goalsJson) ? goalsJson : [];
 
-        // إذا لم تكن الداتا ممررة عبر الـ State، نقوم بالبحث عنها بالـ id
         if (!video) {
           const currentVideo = 
             highlightsList.find(item => String(item.id) === String(id)) || 
             goalsList.find(item => String(item.id) === String(id));
-          
+
           if (currentVideo) {
             setVideo(currentVideo.channel ? { ...currentVideo, platform: 'Dailymotion', thumbnailUrl: currentVideo.imgUrl } : currentVideo);
           }
         }
 
-        // 👈 رابعاً: جعل الـ 6 فيديوهات المقترحة في الأسفل من فيديوهات الأهداف فقط واستبعاد الملخصات
         const filteredGoals = goalsList.filter(item => String(item.id) !== String(id));
         const random6Goals = filteredGoals.sort(() => 0.5 - Math.random()).slice(0, 6);
         setRelatedVideos(random6Goals);
-
       } catch (err) {
         console.error("Error loading video details:", err);
       } finally {
@@ -85,12 +135,10 @@ const VideoDetails = () => {
   }
 
   return (
-    // 👈 ثانياً وثالثاً: تعديل الحاويات وتنسيق الخطوط ليأخذ المشغل 100% من عرض الموقع
     <div className="bg-zinc-950 min-h-screen text-zinc-100" style={{ direction: 'rtl' }}>
       <Navbar />
-      
+
       {/* مشغل الفيديو بكامل عرض الموقع */}
-{/* مشغل الفيديو بكامل عرض الموقع */}
       <section className="video-section-wrapper">
         <div className="youtube-style-player">
           <iframe
@@ -104,11 +152,12 @@ const VideoDetails = () => {
         </div>
       </section>
 
-      {/* تفاصيل وعنوان الفيديو المقسمة بشكل مريح للعين */}
+      {/* 📢 إعلان بعد مشغل الفيديو مباشرة (أعلى موضع) */}
+      <AdSlot ad={topAd} />
+
       <main className="w-full max-w-7xl mx-auto px-4 md:px-8 py-8">
         <div className="mb-10 border-b border-zinc-800/60 pb-6">
-          {/* 👈 ثالثاً: تنسيق العنوان ليكون باللون الأبيض، حجم رائع، متناسق وغير متداخل */}
-          <h1 className="video-title-premium ">
+          <h1 className="video-title-premium">
             {video.title}
           </h1>
           {video.description && (
@@ -118,7 +167,6 @@ const VideoDetails = () => {
           )}
         </div>
 
-        {/* عرض الفيديوهات الـ 6 المقترحة من الأهداف فقط */}
         {relatedVideos.length > 0 && (
           <section className="mt-12 mb-16">
             <h2 className="text-xl md:text-2xl font-bold text-white mb-6 border-r-4 border-emerald-500 pr-3 text-right">
@@ -146,6 +194,9 @@ const VideoDetails = () => {
             </div>
           </section>
         )}
+
+        {/* 📢 إعلان أسفل صفحة تفاصيل الفيديو */}
+        <AdSlot ad={bottomAd} />
       </main>
 
       <Footer />
